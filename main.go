@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"log"
 
@@ -12,17 +11,12 @@ import (
 var img *ebiten.Image
 var level *Level
 
-const tileWidth = 48
-const tileHeight = 48
-
 func init() {
 	var err error
 	level, err = InitLevel("level1.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(level.layout)
 
 	img, _, err = ebitenutil.NewImageFromFile("assets/wall.png")
 	if err != nil {
@@ -42,7 +36,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	w, h := img.Size()
-	op.GeoM.Scale(tileWidth/float64(w), tileHeight/float64(h))
+	op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
 	screen.DrawImage(img, op)
 }
 
@@ -52,7 +46,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
+	level.Draw()
+	ebiten.SetWindowSize(TileWidth*level.maze.cols, TileHeight*level.maze.rows)
 	ebiten.SetWindowTitle("Pacman")
 	// ebiten.SetScreenClearedEveryFrame(false)
 	if err := ebiten.RunGame(&Game{}); err != nil {
