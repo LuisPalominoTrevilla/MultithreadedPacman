@@ -79,7 +79,12 @@ func (p *Pacman) GetDirection() utils.Direction {
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
 	pacman := Pacman{}
-	sprites := []string{"src/assets/pacman-1.png", "src/assets/pacman-2.png", "src/assets/pacman-3.png", "src/assets/pacman-2.png"}
+	sprites := []string{
+		"src/assets/pacman/pacman-1.png",
+		"src/assets/pacman/pacman-2.png",
+		"src/assets/pacman/pacman-3.png",
+		"src/assets/pacman/pacman-2.png",
+	}
 	seq, err := modules.InitSpriteSequence(sprites)
 	pacman.x = x
 	pacman.y = y
