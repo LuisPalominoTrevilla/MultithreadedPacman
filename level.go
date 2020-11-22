@@ -2,8 +2,9 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // TileWidth represents the width of each tile
@@ -31,17 +32,22 @@ func (l *Level) parseLevel(file string) error {
 		line := input.Text()
 		l.maze.AddRow((len(line)))
 		for col, elem := range line {
-			if elem == '#' {
+			switch elem {
+			case '#':
 				wall, err := InitWall()
 				if err != nil {
 					return err
 				}
 				l.maze.AddElement(row, col, wall)
+			case 'P':
+				player, err := InitPacman()
+				if err != nil {
+					return err
+				}
+				l.maze.AddElement(row, col, player)
 			}
 		}
 	}
-
-	fmt.Println(l.maze.rows, l.maze.cols)
 
 	if err := input.Err(); err != nil {
 		return err
@@ -50,14 +56,23 @@ func (l *Level) parseLevel(file string) error {
 	return nil
 }
 
-func (l *Level) Draw() {
+// Draw the entire level
+func (l *Level) Draw(screen *ebiten.Image) {
 	for i := 0; i < l.maze.rows; i++ {
 		for j := 0; j < l.maze.cols; j++ {
-			switch l.maze.maze[i][j].(type) {
+			switch obj := l.maze.maze[i][j].(type) {
 			case *Wall:
-				fmt.Println("This is a wall pointer")
-			default:
-				fmt.Println("Could not recognize object")
+				op := &ebiten.DrawImageOptions{}
+				w, h := obj.sprite.Size()
+				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
+				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
+				screen.DrawImage(obj.sprite, op)
+			case *Pacman:
+				op := &ebiten.DrawImageOptions{}
+				w, h := obj.sprite.Size()
+				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
+				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
+				screen.DrawImage(obj.sprite, op)
 			}
 		}
 	}
