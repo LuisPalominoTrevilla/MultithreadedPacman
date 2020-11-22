@@ -2,24 +2,16 @@ package screens
 
 import (
 	"bufio"
-	"math"
 	"os"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/models"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// TileWidth represents the width of each tile
-const TileWidth = 32
-
-// TileHeight represents the height of each tile
-const TileHeight = 32
-
 // Level represents a level with all of its contents
 type Level struct {
-	Maze   *models.Maze
-	Player *models.Pacman
+	maze   *models.Maze
+	player *models.Pacman
 }
 
 func (l *Level) parseLevel(file string) error {
@@ -30,11 +22,11 @@ func (l *Level) parseLevel(file string) error {
 
 	defer f.Close()
 
-	l.Maze = models.InitMaze()
+	l.maze = models.InitMaze()
 	input := bufio.NewScanner(f)
 	for row := 0; input.Scan(); row++ {
 		line := input.Text()
-		l.Maze.AddRow((len(line)))
+		l.maze.AddRow((len(line)))
 		for col, elem := range line {
 			switch elem {
 			case '#':
@@ -42,20 +34,20 @@ func (l *Level) parseLevel(file string) error {
 				if err != nil {
 					return err
 				}
-				l.Maze.AddElement(row, col, wall)
+				l.maze.AddElement(row, col, wall)
 			case 'P':
 				player, err := models.InitPacman(col, row)
 				if err != nil {
 					return err
 				}
-				l.Player = player
-				l.Maze.AddElement(row, col, player)
+				l.player = player
+				l.maze.AddElement(row, col, player)
 			case '.', '@':
 				food, err := models.InitFood(elem == '@')
 				if err != nil {
 					return err
 				}
-				l.Maze.AddElement(row, col, food)
+				l.maze.AddElement(row, col, food)
 			}
 		}
 	}
@@ -67,47 +59,20 @@ func (l *Level) parseLevel(file string) error {
 	return nil
 }
 
+// Size of the level
+func (l *Level) Size() (width, height int) {
+	return l.maze.Dimensions()
+}
+
+// Run logic of the level
+func (l *Level) Run() {
+	l.player.Run(l.maze)
+}
+
 // Draw the entire level
 func (l *Level) Draw(screen *ebiten.Image) {
-	for i := 0; i < l.Maze.Rows; i++ {
-		for j := 0; j < l.Maze.Cols; j++ {
-			switch obj := l.Maze.Maze[i][j].(type) {
-			case *models.Wall:
-				op := &ebiten.DrawImageOptions{}
-				w, h := obj.Sprite.Size()
-				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
-				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
-				screen.DrawImage(obj.Sprite, op)
-			case *models.Pacman:
-				op := &ebiten.DrawImageOptions{}
-				frame := obj.Sprites.GetCurrentFrame()
-				w, h := frame.Size()
-				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
-				switch obj.Direction {
-				case modules.DirUp:
-					op.GeoM.Translate(-TileWidth/2, -TileHeight/2)
-					op.GeoM.Rotate(3 * math.Pi / 2)
-					op.GeoM.Translate(TileWidth/2, TileHeight/2)
-				case modules.DirDown:
-					op.GeoM.Translate(-TileWidth/2, -TileHeight/2)
-					op.GeoM.Rotate(math.Pi / 2)
-					op.GeoM.Translate(TileWidth/2, TileHeight/2)
-				case modules.DirLeft:
-					op.GeoM.Translate(-TileWidth/2, -TileHeight/2)
-					op.GeoM.Scale(-1, 1)
-					op.GeoM.Translate(TileWidth/2, TileHeight/2)
-				}
-				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
-				screen.DrawImage(frame, op)
-			case *models.Food:
-				op := &ebiten.DrawImageOptions{}
-				w, h := obj.Sprite.Size()
-				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
-				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
-				screen.DrawImage(obj.Sprite, op)
-			}
-		}
-	}
+	l.maze.Draw(screen)
+	// TODO: Draw scoreboard and stuff on the bottom of the screen (Add more space first)
 }
 
 // InitLevel given a valid level file

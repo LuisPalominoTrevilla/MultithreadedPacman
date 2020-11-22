@@ -2,13 +2,16 @@ package models
 
 import (
 	"errors"
+
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Maze represents the level map/maze
 type Maze struct {
-	Rows int
-	Cols int
-	Maze [][]interface{}
+	rows     int
+	cols     int
+	logicMap [][]interfaces.GameObject
 }
 
 func mod(d, m int) int {
@@ -19,47 +22,64 @@ func mod(d, m int) int {
 	return res
 }
 
+// Dimensions of the logic map
+func (m *Maze) Dimensions() (width, height int) {
+	return m.cols, m.rows
+}
+
 // MoveElement within the maze. This method does not verify rules
 func (m *Maze) MoveElement(fromX, fromY, dx, dy int) {
-	switch obj := m.Maze[fromY][fromX].(type) {
+	switch obj := m.logicMap[fromY][fromX].(type) {
 	case *Pacman:
-		m.Maze[fromY][fromX] = nil
-		toX := mod(fromX+dx, m.Cols)
-		toY := mod(fromY+dy, m.Rows)
-		m.Maze[toY][toX] = obj
+		m.logicMap[fromY][fromX] = nil
+		toX := mod(fromX+dx, m.cols)
+		toY := mod(fromY+dy, m.rows)
+		m.logicMap[toY][toX] = obj
 		obj.x = toX
 		obj.y = toY
 	}
 }
 
+// Draw the complete maze to the screen
+func (m *Maze) Draw(screen *ebiten.Image) {
+	for i := 0; i < m.rows; i++ {
+		for j := 0; j < m.cols; j++ {
+			switch obj := m.logicMap[i][j].(type) {
+			case *Wall, *Food, *Pacman:
+				obj.Draw(screen, j, i)
+			}
+		}
+	}
+}
+
 // AddElement to the maze
-func (m *Maze) AddElement(i, j int, elem interface{}) error {
-	if i >= m.Rows || j >= m.Cols {
+func (m *Maze) AddElement(i, j int, elem interfaces.GameObject) error {
+	if i >= m.rows || j >= m.cols {
 		return errors.New("Invalid position to add element to maze")
 	}
 
-	m.Maze[i][j] = elem
+	m.logicMap[i][j] = elem
 	return nil
 }
 
 // AddRow to the maze
 func (m *Maze) AddRow(cols int) error {
-	if m.Cols > 0 && m.Cols != cols {
+	if m.cols > 0 && m.cols != cols {
 		return errors.New("Number of columns cannot be different for each row")
 	}
 
-	m.Maze = append(m.Maze, make([]interface{}, cols))
-	m.Rows++
-	m.Cols = cols
+	m.logicMap = append(m.logicMap, make([]interfaces.GameObject, cols))
+	m.rows++
+	m.cols = cols
 	return nil
 }
 
 // InitMaze of the level with generic data
 func InitMaze() *Maze {
 	maze := Maze{
-		Rows: 0,
-		Cols: 0,
-		Maze: make([][]interface{}, 0),
+		rows:     0,
+		cols:     0,
+		logicMap: make([][]interfaces.GameObject, 0),
 	}
 
 	return &maze

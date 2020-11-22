@@ -1,4 +1,4 @@
-package modules
+package utils
 
 // Direction expresses a direction
 type Direction int
@@ -12,4 +12,5 @@ const (
 	DirDown
 	DirLeft
 	DirRight
+	DirStatic
 )

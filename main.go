@@ -4,6 +4,7 @@ import (
 	_ "image/png"
 	"log"
 
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/screens"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -37,9 +38,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	ebiten.SetWindowSize(screens.TileWidth*level.Maze.Cols, screens.TileHeight*level.Maze.Rows)
+	w, h := level.Size()
+	ebiten.SetWindowSize(constants.TileSize*w, constants.TileSize*h)
 	ebiten.SetWindowTitle("Pacman")
-	go level.Player.Run(level.Maze)
+	go level.Run()
 	// ebiten.SetScreenClearedEveryFrame(false)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
