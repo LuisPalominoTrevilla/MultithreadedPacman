@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"log"
 
@@ -23,7 +22,6 @@ type Game struct{}
 
 // Update game logic
 func (g *Game) Update() error {
-	fmt.Println(ebiten.CurrentFPS())
 	return nil
 }
 

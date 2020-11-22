@@ -61,6 +61,18 @@ func (l *Level) parseLevel(file string) error {
 				}
 				l.player = player
 				l.maze.AddElement(row, col, player)
+			case '.':
+				food, err := InitFood(false)
+				if err != nil {
+					return err
+				}
+				l.maze.AddElement(row, col, food)
+			case '@':
+				food, err := InitFood(true)
+				if err != nil {
+					return err
+				}
+				l.maze.AddElement(row, col, food)
 			}
 		}
 	}
@@ -84,6 +96,12 @@ func (l *Level) Draw(screen *ebiten.Image) {
 				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
 				screen.DrawImage(obj.sprite, op)
 			case *Pacman:
+				op := &ebiten.DrawImageOptions{}
+				w, h := obj.sprite.Size()
+				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))
+				op.GeoM.Translate(TileWidth*float64(j), TileHeight*float64(i))
+				screen.DrawImage(obj.sprite, op)
+			case *Food:
 				op := &ebiten.DrawImageOptions{}
 				w, h := obj.sprite.Size()
 				op.GeoM.Scale(TileWidth/float64(w), TileHeight/float64(h))

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 )
 
 // Maze represents the level map/maze
@@ -30,8 +29,6 @@ func (m *Maze) MoveElement(fromX, fromY, dx, dy int) {
 		m.maze[toY][toX] = obj
 		obj.x = toX
 		obj.y = toY
-	default:
-		fmt.Println("Not pacman")
 	}
 }
 
