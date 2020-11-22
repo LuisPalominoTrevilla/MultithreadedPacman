@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 )
 
 // Maze represents the level map/maze
@@ -9,6 +10,29 @@ type Maze struct {
 	rows int
 	cols int
 	maze [][]interface{}
+}
+
+func mod(d, m int) int {
+	var res int = d % m
+	if (res < 0 && m > 0) || (res > 0 && m < 0) {
+		return res + m
+	}
+	return res
+}
+
+// MoveElement within the maze. This method does not verify rules
+func (m *Maze) MoveElement(fromX, fromY, dx, dy int) {
+	switch obj := m.maze[fromY][fromX].(type) {
+	case *Pacman:
+		m.maze[fromY][fromX] = nil
+		toX := mod(fromX+dx, m.cols)
+		toY := mod(fromY+dy, m.rows)
+		m.maze[toY][toX] = obj
+		obj.x = toX
+		obj.y = toY
+	default:
+		fmt.Println("Not pacman")
+	}
 }
 
 // AddElement to the maze

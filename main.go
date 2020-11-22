@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 
@@ -22,6 +23,7 @@ type Game struct{}
 
 // Update game logic
 func (g *Game) Update() error {
+	fmt.Println(ebiten.CurrentFPS())
 	return nil
 }
 
@@ -38,6 +40,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	ebiten.SetWindowSize(TileWidth*level.maze.cols, TileHeight*level.maze.rows)
 	ebiten.SetWindowTitle("Pacman")
+	go level.player.Run(level)
 	// ebiten.SetScreenClearedEveryFrame(false)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)

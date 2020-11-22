@@ -7,6 +7,20 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// Direction expresses a direction
+type Direction int
+
+// DirUp direction upwards
+// DirDown direction downwards
+// DirLeft direction left
+// DirRight direction right
+const (
+	DirUp    Direction = iota
+	DirDown  Direction = iota
+	DirLeft  Direction = iota
+	DirRight Direction = iota
+)
+
 // TileWidth represents the width of each tile
 const TileWidth = 32
 
@@ -15,7 +29,8 @@ const TileHeight = 32
 
 // Level represents a level with all of its contents
 type Level struct {
-	maze *Maze
+	maze   *Maze
+	player *Pacman
 }
 
 func (l *Level) parseLevel(file string) error {
@@ -40,10 +55,11 @@ func (l *Level) parseLevel(file string) error {
 				}
 				l.maze.AddElement(row, col, wall)
 			case 'P':
-				player, err := InitPacman()
+				player, err := InitPacman(col, row)
 				if err != nil {
 					return err
 				}
+				l.player = player
 				l.maze.AddElement(row, col, player)
 			}
 		}
