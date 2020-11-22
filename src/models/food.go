@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
@@ -7,7 +7,7 @@ import (
 
 // Food represents a food
 type Food struct {
-	sprite *ebiten.Image
+	Sprite *ebiten.Image
 	super  bool
 }
 
@@ -16,13 +16,13 @@ func InitFood(isSuper bool) (*Food, error) {
 	food := Food{}
 	var assetFile string
 	if isSuper {
-		assetFile = "assets/superFood.png"
+		assetFile = "src/assets/superFood.png"
 	} else {
-		assetFile = "assets/food.png"
+		assetFile = "src/assets/food.png"
 	}
 
 	img, _, err := ebitenutil.NewImageFromFile(assetFile)
-	food.sprite = img
+	food.Sprite = img
 	food.super = isSuper
 	return &food, err
 }
