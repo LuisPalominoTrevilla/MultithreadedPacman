@@ -58,7 +58,7 @@ func InitGameController() (*GameController, error) {
 		screens: make(map[constants.GameState]interfaces.Screen),
 	}
 
-	level, err := screens.InitLevel("src/assets/level1.txt")
+	level, err := screens.InitLevel("assets/level1.txt")
 	if err != nil {
 		return nil, err
 	}

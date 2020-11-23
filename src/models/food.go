@@ -34,9 +34,9 @@ func InitFood(isSuper bool) (*Food, error) {
 	food := Food{}
 	var assetFile string
 	if isSuper {
-		assetFile = "src/assets/superFood.png"
+		assetFile = "assets/superFood.png"
 	} else {
-		assetFile = "src/assets/food.png"
+		assetFile = "assets/food.png"
 	}
 
 	img, _, err := ebitenutil.NewImageFromFile(assetFile)

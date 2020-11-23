@@ -20,6 +20,7 @@ type Pacman struct {
 	sprites           *structures.SpriteSequence
 	animator          *modules.Animator
 	collisionDetector *modules.CollisionDetector
+	soundPlayer       *modules.SoundPlayer
 }
 
 func (p *Pacman) keyListener() {
@@ -65,6 +66,7 @@ func (p *Pacman) handleCollisions(
 		// TODO: increment score, set appropriate state if food is super food
 		maze.MoveElement(p, true)
 		p.sprites.Advance()
+		p.soundPlayer.PlayOnce(constants.MunchEffect)
 		msg <- constants.FoodEaten
 	default:
 		maze.MoveElement(p, false)
@@ -76,6 +78,9 @@ func (p *Pacman) handleCollisions(
 func (p *Pacman) Run(maze *structures.Maze, msg chan<- constants.EventType) {
 	if p.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
+	}
+	if p.soundPlayer == nil {
+		log.Fatal("Sound player is not attached")
 	}
 
 	prevDirection := p.direction
@@ -122,14 +127,19 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 	p.collisionDetector = collisionDetector
 }
 
+// AttachSoundPlayer to the element
+func (p *Pacman) AttachSoundPlayer(soundPlayer *modules.SoundPlayer) {
+	p.soundPlayer = soundPlayer
+}
+
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
 	pacman := Pacman{}
 	sprites := []string{
-		"src/assets/pacman/pacman-1.png",
-		"src/assets/pacman/pacman-2.png",
-		"src/assets/pacman/pacman-3.png",
-		"src/assets/pacman/pacman-2.png",
+		"assets/pacman/pacman-1.png",
+		"assets/pacman/pacman-2.png",
+		"assets/pacman/pacman-3.png",
+		"assets/pacman/pacman-2.png",
 	}
 	seq, err := structures.InitSpriteSequence(sprites)
 	pacman.x = x

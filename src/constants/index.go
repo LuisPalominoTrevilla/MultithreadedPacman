@@ -24,6 +24,22 @@ const (
 	FoodEaten EventType = iota
 )
 
+// SoundEffect represents a type of sound effect
+type SoundEffect int
+
+// MunchEffect - pacman munch sound FX
+// GameStart - pacman's main game start theme
+const (
+	MunchEffect SoundEffect = iota
+	GameStart
+)
+
+// AudioFiles for each sound effect
+var AudioFiles = map[SoundEffect][]string{
+	MunchEffect: {"assets/audio/munch_1.wav", "assets/audio/munch_2.wav"},
+	GameStart:   {"assets/audio/game_start.wav"},
+}
+
 // Direction expresses a direction
 type Direction struct {
 	X int

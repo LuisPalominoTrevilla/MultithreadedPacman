@@ -31,7 +31,7 @@ func (w *Wall) GetDirection() constants.Direction {
 // InitWall of the maze
 func InitWall() (*Wall, error) {
 	wall := Wall{}
-	img, _, err := ebitenutil.NewImageFromFile("src/assets/wall.png")
+	img, _, err := ebitenutil.NewImageFromFile("assets/wall.png")
 	wall.sprite = img
 	wall.animator = modules.InitAnimator(&wall)
 	return &wall, err

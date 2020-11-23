@@ -38,3 +38,29 @@ func InitSpriteSequence(sprites []string) (*SpriteSequence, error) {
 
 	return &seq, nil
 }
+
+// SoundSequence represents a sequence of audio files
+type SoundSequence struct {
+	current int
+	files   [][]byte
+}
+
+// Advance current frame
+func (s *SoundSequence) Advance() {
+	s.current = (s.current + 1) % len(s.files)
+}
+
+// GetCurrentAudio to be used by an animator
+func (s *SoundSequence) GetCurrentAudio() []byte {
+	return s.files[s.current]
+}
+
+// InitSoundSequence instantiates a sprite sequence
+func InitSoundSequence(files [][]byte) *SoundSequence {
+	seq := SoundSequence{
+		current: 0,
+		files:   files,
+	}
+
+	return &seq
+}
