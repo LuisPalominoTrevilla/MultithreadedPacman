@@ -5,12 +5,14 @@ import (
 	"os"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/models"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Level represents a level with all of its contents
 type Level struct {
-	maze   *models.Maze
+	maze   *structures.Maze
 	player *models.Pacman
 }
 
@@ -22,7 +24,7 @@ func (l *Level) parseLevel(file string) error {
 
 	defer f.Close()
 
-	l.maze = models.InitMaze()
+	l.maze = structures.InitMaze()
 	input := bufio.NewScanner(f)
 	for row := 0; input.Scan(); row++ {
 		line := input.Text()
@@ -40,6 +42,7 @@ func (l *Level) parseLevel(file string) error {
 				if err != nil {
 					return err
 				}
+				player.AttachCollisionDetector(modules.InitCollisionDetector(player, l.maze))
 				l.player = player
 				l.maze.AddElement(row, col, player)
 			case '.', '@':

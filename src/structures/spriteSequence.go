@@ -1,4 +1,4 @@
-package modules
+package structures
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"

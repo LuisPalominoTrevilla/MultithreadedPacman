@@ -1,10 +1,11 @@
-package models
+package structures
 
 import (
 	"errors"
 	"log"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -13,14 +14,6 @@ type Maze struct {
 	rows     int
 	cols     int
 	logicMap [][]*GameObjectGroup
-}
-
-func mod(d, m int) int {
-	var res int = d % m
-	if (res < 0 && m > 0) || (res > 0 && m < 0) {
-		return res + m
-	}
-	return res
 }
 
 // Dimensions of the logic map
@@ -33,25 +26,31 @@ func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement boo
 	fromX, fromY := elem.GetPosition()
 	sourceGroup := m.logicMap[fromY][fromX]
 
-	switch elem.(type) {
-	case *Pacman:
-		valid := sourceGroup.RemoveElement(elem)
-		if !valid {
-			log.Println("Could not find element to move")
-			return
-		}
-
-		direction := elem.GetDirection()
-		toX := mod(fromX+direction.X, m.cols)
-		toY := mod(fromY+direction.Y, m.rows)
-		destinationGroup := m.logicMap[toY][toX]
-		if delDestElement {
-			// TODO: Dispose of the sprite of the removed element
-			destinationGroup.RemoveTopElement()
-		}
-		destinationGroup.AddElement(elem)
-		elem.SetPosition(toX, toY)
+	valid := sourceGroup.RemoveElement(elem)
+	if !valid {
+		log.Println("Could not find element to move")
+		return
 	}
+
+	direction := elem.GetDirection()
+	toX := utils.Mod(fromX+direction.X, m.cols)
+	toY := utils.Mod(fromY+direction.Y, m.rows)
+	destinationGroup := m.logicMap[toY][toX]
+	if delDestElement {
+		// TODO: Dispose of the sprite of the removed element
+		destinationGroup.RemoveTopElement()
+	}
+	destinationGroup.AddElement(elem)
+	elem.SetPosition(toX, toY)
+}
+
+// ElementsAt the specified position. Nil if position is out of bounds
+func (m *Maze) ElementsAt(x, y int) *GameObjectGroup {
+	if x < 0 || x >= m.cols || y < 0 || y >= m.rows {
+		return nil
+	}
+
+	return m.logicMap[y][x]
 }
 
 // Draw the complete maze to the screen
@@ -68,7 +67,7 @@ func (m *Maze) Draw(screen *ebiten.Image) {
 
 // AddElement to the maze
 func (m *Maze) AddElement(i, j int, elem interfaces.GameObject) error {
-	if i >= m.rows || j >= m.cols {
+	if i < 0 || i >= m.rows || j < 0 || j >= m.cols {
 		return errors.New("Invalid position to add element to maze")
 	}
 

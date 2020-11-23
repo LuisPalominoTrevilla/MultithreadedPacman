@@ -1,4 +1,4 @@
-package models
+package structures
 
 import "github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 
