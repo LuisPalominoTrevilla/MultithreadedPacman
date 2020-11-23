@@ -6,16 +6,26 @@ const (
 	DefaultPacmanFPS = 6
 )
 
+// GameState represents the game state
+type GameState int
+
+// InactiveState - inactive game state
+// PlayState - playing game state
+const (
+	InactiveState GameState = iota
+	PlayState
+)
+
 // Direction expresses a direction
 type Direction struct {
 	X int
 	Y int
 }
 
-// DirUp direction upwards
-// DirDown direction downwards
-// DirLeft direction left
-// DirRight direction right
+// DirUp - direction upwards
+// DirDown - direction downwards
+// DirLeft - direction left
+// DirRight - direction right
 var (
 	DirUp     = Direction{X: 0, Y: -1}
 	DirDown   = Direction{X: 0, Y: 1}

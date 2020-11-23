@@ -69,7 +69,9 @@ func (l *Level) Size() (width, height int) {
 
 // Run logic of the level
 func (l *Level) Run() {
-	l.player.Run(l.maze)
+	// TODO: sleep while playing initial sound of level
+	// time.Sleep(time.Duration(2) * time.Second)
+	go l.player.Run(l.maze)
 }
 
 // Draw the entire level

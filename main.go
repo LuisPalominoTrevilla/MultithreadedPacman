@@ -5,15 +5,15 @@ import (
 	"log"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/screens"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/controller"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-var level *screens.Level
+var gameController *controller.GameController
 
 func init() {
 	var err error
-	level, err = screens.InitLevel("src/assets/level1.txt")
+	gameController, err = controller.InitGameController()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,12 +24,15 @@ type Game struct{}
 
 // Update game logic
 func (g *Game) Update() error {
+	if gameController.State() == constants.InactiveState {
+		go gameController.InitGame()
+	}
 	return nil
 }
 
 // Draw frame by frame the scene
 func (g *Game) Draw(screen *ebiten.Image) {
-	level.Draw(screen)
+	gameController.Draw(screen)
 }
 
 // Layout of the game
@@ -38,10 +41,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	w, h := level.Size()
-	ebiten.SetWindowSize(constants.TileSize*w, constants.TileSize*h)
-	ebiten.SetWindowTitle("Pacman")
-	go level.Run()
 	// ebiten.SetScreenClearedEveryFrame(false)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
