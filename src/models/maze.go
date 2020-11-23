@@ -2,8 +2,8 @@ package models
 
 import (
 	"errors"
+	"log"
 
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -12,7 +12,7 @@ import (
 type Maze struct {
 	rows     int
 	cols     int
-	logicMap [][]interfaces.GameObject
+	logicMap [][]*GameObjectGroup
 }
 
 func mod(d, m int) int {
@@ -28,16 +28,29 @@ func (m *Maze) Dimensions() (width, height int) {
 	return m.cols, m.rows
 }
 
-// MoveElement within the maze assuming that the move is appropriate
-func (m *Maze) MoveElement(fromX, fromY int, direction constants.Direction) {
-	switch obj := m.logicMap[fromY][fromX].(type) {
+// MoveElement within the maze without checking whether the move is appropriate
+func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement bool) {
+	fromX, fromY := elem.GetPosition()
+	sourceGroup := m.logicMap[fromY][fromX]
+
+	switch elem.(type) {
 	case *Pacman:
-		m.logicMap[fromY][fromX] = nil
+		valid := sourceGroup.RemoveElement(elem)
+		if !valid {
+			log.Println("Could not find element to move")
+			return
+		}
+
+		direction := elem.GetDirection()
 		toX := mod(fromX+direction.X, m.cols)
 		toY := mod(fromY+direction.Y, m.rows)
-		m.logicMap[toY][toX] = obj
-		obj.x = toX
-		obj.y = toY
+		destinationGroup := m.logicMap[toY][toX]
+		if delDestElement {
+			// TODO: Dispose of the sprite of the removed element
+			destinationGroup.RemoveTopElement()
+		}
+		destinationGroup.AddElement(elem)
+		elem.SetPosition(toX, toY)
 	}
 }
 
@@ -45,7 +58,8 @@ func (m *Maze) MoveElement(fromX, fromY int, direction constants.Direction) {
 func (m *Maze) Draw(screen *ebiten.Image) {
 	for i := 0; i < m.rows; i++ {
 		for j := 0; j < m.cols; j++ {
-			if object := m.logicMap[i][j]; object != nil {
+			groupObject := m.logicMap[i][j]
+			if object := groupObject.ElementOnTop(); object != nil {
 				object.Draw(screen, j, i)
 			}
 		}
@@ -58,7 +72,8 @@ func (m *Maze) AddElement(i, j int, elem interfaces.GameObject) error {
 		return errors.New("Invalid position to add element to maze")
 	}
 
-	m.logicMap[i][j] = elem
+	groupObject := m.logicMap[i][j]
+	groupObject.AddElement(elem)
 	return nil
 }
 
@@ -68,7 +83,10 @@ func (m *Maze) AddRow(cols int) error {
 		return errors.New("Number of columns cannot be different for each row")
 	}
 
-	m.logicMap = append(m.logicMap, make([]interfaces.GameObject, cols))
+	m.logicMap = append(m.logicMap, make([]*GameObjectGroup, cols))
+	for j := 0; j < cols; j++ {
+		m.logicMap[m.rows][j] = InitGameObjectGroup()
+	}
 	m.rows++
 	m.cols = cols
 	return nil
@@ -79,7 +97,7 @@ func InitMaze() *Maze {
 	maze := Maze{
 		rows:     0,
 		cols:     0,
-		logicMap: make([][]interfaces.GameObject, 0),
+		logicMap: make([][]*GameObjectGroup, 0),
 	}
 
 	return &maze

@@ -11,3 +11,12 @@ type GameObject interface {
 	GetSprite() *ebiten.Image
 	GetDirection() constants.Direction
 }
+
+// MovableGameObject interface special tipe of GameObject
+type MovableGameObject interface {
+	Draw(screen *ebiten.Image, x, y int)
+	GetSprite() *ebiten.Image
+	GetDirection() constants.Direction
+	GetPosition() (x, y int)
+	SetPosition(x, y int)
+}

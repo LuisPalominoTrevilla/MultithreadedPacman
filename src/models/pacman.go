@@ -39,7 +39,7 @@ func (p *Pacman) Run(maze *Maze) {
 	go p.keyListener()
 	for {
 		// TODO: set mutex here
-		maze.MoveElement(p.x, p.y, p.direction)
+		maze.MoveElement(p, true)
 		p.sprites.Advance()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
@@ -58,6 +58,17 @@ func (p *Pacman) GetSprite() *ebiten.Image {
 // GetDirection of the element
 func (p *Pacman) GetDirection() constants.Direction {
 	return p.direction
+}
+
+// GetPosition of the element
+func (p *Pacman) GetPosition() (x, y int) {
+	return p.x, p.y
+}
+
+// SetPosition of the element
+func (p *Pacman) SetPosition(x, y int) {
+	p.x = x
+	p.y = y
 }
 
 // InitPacman player for the level
