@@ -50,6 +50,10 @@ func (p *Pacman) Run(maze *structures.Maze) {
 		switch target.(type) {
 		case *Wall:
 			p.direction = prevDirection
+		case *Food:
+			// TODO: increment score, set appropriate state if food is super food
+			maze.MoveElement(p, true)
+			p.sprites.Advance()
 		default:
 			maze.MoveElement(p, false)
 			p.sprites.Advance()
