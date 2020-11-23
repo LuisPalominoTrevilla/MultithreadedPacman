@@ -28,7 +28,7 @@ func (m *Maze) Dimensions() (width, height int) {
 	return m.cols, m.rows
 }
 
-// MoveElement within the maze. This method does not verify rules
+// MoveElement within the maze assuming that the move is appropriate
 func (m *Maze) MoveElement(fromX, fromY int, direction constants.Direction) {
 	switch obj := m.logicMap[fromY][fromX].(type) {
 	case *Pacman:
@@ -45,9 +45,8 @@ func (m *Maze) MoveElement(fromX, fromY int, direction constants.Direction) {
 func (m *Maze) Draw(screen *ebiten.Image) {
 	for i := 0; i < m.rows; i++ {
 		for j := 0; j < m.cols; j++ {
-			switch obj := m.logicMap[i][j].(type) {
-			case *Wall, *Food, *Pacman:
-				obj.Draw(screen, j, i)
+			if object := m.logicMap[i][j]; object != nil {
+				object.Draw(screen, j, i)
 			}
 		}
 	}
