@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -28,12 +29,12 @@ func (m *Maze) Dimensions() (width, height int) {
 }
 
 // MoveElement within the maze. This method does not verify rules
-func (m *Maze) MoveElement(fromX, fromY, dx, dy int) {
+func (m *Maze) MoveElement(fromX, fromY int, direction constants.Direction) {
 	switch obj := m.logicMap[fromY][fromX].(type) {
 	case *Pacman:
 		m.logicMap[fromY][fromX] = nil
-		toX := mod(fromX+dx, m.cols)
-		toY := mod(fromY+dy, m.rows)
+		toX := mod(fromX+direction.X, m.cols)
+		toY := mod(fromY+direction.Y, m.rows)
 		m.logicMap[toY][toX] = obj
 		obj.x = toX
 		obj.y = toY

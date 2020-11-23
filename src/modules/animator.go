@@ -5,7 +5,6 @@ import (
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -21,15 +20,15 @@ func (a *Animator) DrawFrame(screen *ebiten.Image, x, y int) {
 	width, height := frame.Size()
 	op.GeoM.Scale(constants.TileSize/float64(width), constants.TileSize/float64(height))
 	switch a.object.GetDirection() {
-	case utils.DirUp:
+	case constants.DirUp:
 		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
 		op.GeoM.Rotate(3 * math.Pi / 2)
 		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
-	case utils.DirDown:
+	case constants.DirDown:
 		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
 		op.GeoM.Rotate(math.Pi / 2)
 		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
-	case utils.DirLeft:
+	case constants.DirLeft:
 		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
 		op.GeoM.Scale(-1, 1)
 		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)

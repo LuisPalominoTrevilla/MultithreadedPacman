@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -24,8 +24,8 @@ func (w *Wall) GetSprite() *ebiten.Image {
 }
 
 // GetDirection of the element
-func (w *Wall) GetDirection() utils.Direction {
-	return utils.DirStatic
+func (w *Wall) GetDirection() constants.Direction {
+	return constants.DirStatic
 }
 
 // InitWall of the maze

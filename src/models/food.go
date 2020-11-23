@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -25,8 +25,8 @@ func (f *Food) GetSprite() *ebiten.Image {
 }
 
 // GetDirection of the element
-func (f *Food) GetDirection() utils.Direction {
-	return utils.DirStatic
+func (f *Food) GetDirection() constants.Direction {
+	return constants.DirStatic
 }
 
 // InitFood of the maze

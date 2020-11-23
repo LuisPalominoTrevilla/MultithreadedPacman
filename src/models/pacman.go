@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -13,7 +13,7 @@ type Pacman struct {
 	x         int
 	y         int
 	speed     int
-	direction utils.Direction
+	direction constants.Direction
 	sprites   *modules.SpriteSequence
 	animator  *modules.Animator
 }
@@ -21,13 +21,13 @@ type Pacman struct {
 func (p *Pacman) keyListener() {
 	for {
 		if ebiten.IsKeyPressed(ebiten.KeyUp) {
-			p.direction = utils.DirUp
+			p.direction = constants.DirUp
 		} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
-			p.direction = utils.DirDown
+			p.direction = constants.DirDown
 		} else if ebiten.IsKeyPressed(ebiten.KeyRight) {
-			p.direction = utils.DirRight
+			p.direction = constants.DirRight
 		} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-			p.direction = utils.DirLeft
+			p.direction = constants.DirLeft
 		}
 
 		time.Sleep(time.Duration(30) * time.Millisecond)
@@ -38,24 +38,8 @@ func (p *Pacman) keyListener() {
 func (p *Pacman) Run(maze *Maze) {
 	go p.keyListener()
 	for {
-		var dx, dy int
-		switch p.direction {
-		case utils.DirUp:
-			dx = 0
-			dy = -1
-		case utils.DirDown:
-			dx = 0
-			dy = 1
-		case utils.DirLeft:
-			dx = -1
-			dy = 0
-		case utils.DirRight:
-			dx = 1
-			dy = 0
-		}
-
 		// TODO: set mutex here
-		maze.MoveElement(p.x, p.y, dx, dy)
+		maze.MoveElement(p.x, p.y, p.direction)
 		p.sprites.Advance()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
@@ -72,7 +56,7 @@ func (p *Pacman) GetSprite() *ebiten.Image {
 }
 
 // GetDirection of the element
-func (p *Pacman) GetDirection() utils.Direction {
+func (p *Pacman) GetDirection() constants.Direction {
 	return p.direction
 }
 
@@ -89,7 +73,7 @@ func InitPacman(x, y int) (*Pacman, error) {
 	pacman.x = x
 	pacman.y = y
 	pacman.speed = 5
-	pacman.direction = utils.DirLeft
+	pacman.direction = constants.DirLeft
 	pacman.sprites = seq
 	pacman.animator = modules.InitAnimator(&pacman)
 	return &pacman, err

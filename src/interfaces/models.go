@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -9,5 +9,5 @@ import (
 type GameObject interface {
 	Draw(screen *ebiten.Image, x, y int)
 	GetSprite() *ebiten.Image
-	GetDirection() utils.Direction
+	GetDirection() constants.Direction
 }
