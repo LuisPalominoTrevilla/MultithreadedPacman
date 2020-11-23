@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/models"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
@@ -67,11 +68,16 @@ func (l *Level) Size() (width, height int) {
 	return l.maze.Dimensions()
 }
 
-// Run logic of the level
+// Run logic of the level, incluiding redraws
 func (l *Level) Run() {
 	// TODO: sleep while playing initial sound of level
 	// time.Sleep(time.Duration(2) * time.Second)
-	go l.player.Run(l.maze)
+	levelMsg := make(chan constants.EventType)
+	go l.player.Run(l.maze, levelMsg)
+	for {
+		<-levelMsg
+		// TODO: switch case to detect what message was sent
+	}
 }
 
 // Draw the entire level

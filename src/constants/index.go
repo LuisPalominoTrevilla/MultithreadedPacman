@@ -16,6 +16,14 @@ const (
 	PlayState
 )
 
+// EventType represents a type of event
+type EventType int
+
+// FoodEaten - event that indicates a food was eaten
+const (
+	FoodEaten EventType = iota
+)
+
 // Direction expresses a direction
 type Direction struct {
 	X int

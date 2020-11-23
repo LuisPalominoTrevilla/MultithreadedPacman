@@ -2,7 +2,6 @@ package models
 
 import (
 	"log"
-	"sync"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -16,7 +15,7 @@ type Pacman struct {
 	x                 int
 	y                 int
 	speed             int
-	dirMutex          sync.Mutex
+	keyDirection      constants.Direction
 	direction         constants.Direction
 	sprites           *structures.SpriteSequence
 	animator          *modules.Animator
@@ -24,24 +23,57 @@ type Pacman struct {
 }
 
 func (p *Pacman) keyListener() {
+	lastPressed := time.Now()
 	for {
-		p.dirMutex.Lock()
 		if ebiten.IsKeyPressed(ebiten.KeyUp) {
-			p.direction = constants.DirUp
+			p.keyDirection = constants.DirUp
+			lastPressed = time.Now()
 		} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
-			p.direction = constants.DirDown
+			p.keyDirection = constants.DirDown
+			lastPressed = time.Now()
 		} else if ebiten.IsKeyPressed(ebiten.KeyRight) {
-			p.direction = constants.DirRight
+			p.keyDirection = constants.DirRight
+			lastPressed = time.Now()
 		} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-			p.direction = constants.DirLeft
+			p.keyDirection = constants.DirLeft
+			lastPressed = time.Now()
 		}
-		p.dirMutex.Unlock()
+
+		// Reset keyDirection if no key was pressed in the last 150 milliseconds
+		if time.Now().Sub(lastPressed).Milliseconds() > 150 {
+			p.keyDirection = constants.DirStatic
+		}
 		time.Sleep(time.Duration(30) * time.Millisecond)
 	}
 }
 
+// Refactored method to handle collisions.
+// Retries once if collision is a wall to stop users from switching to a colliding direction
+func (p *Pacman) handleCollisions(
+	prevDirection constants.Direction,
+	maze *structures.Maze,
+	msg chan<- constants.EventType,
+) {
+	target := p.collisionDetector.DetectCollision()
+	switch target.(type) {
+	case *Wall:
+		if p.direction != prevDirection {
+			p.direction = prevDirection
+			p.handleCollisions(prevDirection, maze, msg)
+		}
+	case *Food:
+		// TODO: increment score, set appropriate state if food is super food
+		maze.MoveElement(p, true)
+		p.sprites.Advance()
+		msg <- constants.FoodEaten
+	default:
+		maze.MoveElement(p, false)
+		p.sprites.Advance()
+	}
+}
+
 // Run the behavior of the player
-func (p *Pacman) Run(maze *structures.Maze) {
+func (p *Pacman) Run(maze *structures.Maze, msg chan<- constants.EventType) {
 	if p.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
 	}
@@ -49,22 +81,12 @@ func (p *Pacman) Run(maze *structures.Maze) {
 	prevDirection := p.direction
 	go p.keyListener()
 	for {
-		// TODO: set another mutex here to protect access to move elements in maze
-		p.dirMutex.Lock()
-		target := p.collisionDetector.DetectCollision()
-		switch target.(type) {
-		case *Wall:
-			p.direction = prevDirection
-		case *Food:
-			// TODO: increment score, set appropriate state if food is super food
-			maze.MoveElement(p, true)
-			p.sprites.Advance()
-		default:
-			maze.MoveElement(p, false)
-			p.sprites.Advance()
+		// TODO: set mutex here to protect access to move elements in maze
+		if p.keyDirection != constants.DirStatic {
+			p.direction = p.keyDirection
 		}
+		p.handleCollisions(prevDirection, maze, msg)
 		prevDirection = p.direction
-		p.dirMutex.Unlock()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
 }
@@ -114,6 +136,7 @@ func InitPacman(x, y int) (*Pacman, error) {
 	pacman.y = y
 	pacman.speed = constants.DefaultPacmanFPS
 	pacman.direction = constants.DirLeft
+	pacman.keyDirection = constants.DirLeft
 	pacman.sprites = seq
 	pacman.animator = modules.InitAnimator(&pacman)
 	return &pacman, err
