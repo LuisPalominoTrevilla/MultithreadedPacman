@@ -2,6 +2,7 @@ package models
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -15,6 +16,7 @@ type Pacman struct {
 	x                 int
 	y                 int
 	speed             int
+	dirMutex          sync.Mutex
 	direction         constants.Direction
 	sprites           *structures.SpriteSequence
 	animator          *modules.Animator
@@ -23,6 +25,7 @@ type Pacman struct {
 
 func (p *Pacman) keyListener() {
 	for {
+		p.dirMutex.Lock()
 		if ebiten.IsKeyPressed(ebiten.KeyUp) {
 			p.direction = constants.DirUp
 		} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
@@ -32,6 +35,7 @@ func (p *Pacman) keyListener() {
 		} else if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			p.direction = constants.DirLeft
 		}
+		p.dirMutex.Unlock()
 		time.Sleep(time.Duration(30) * time.Millisecond)
 	}
 }
@@ -45,7 +49,8 @@ func (p *Pacman) Run(maze *structures.Maze) {
 	prevDirection := p.direction
 	go p.keyListener()
 	for {
-		// TODO: set mutex here
+		// TODO: set another mutex here to protect access to move elements in maze
+		p.dirMutex.Lock()
 		target := p.collisionDetector.DetectCollision()
 		switch target.(type) {
 		case *Wall:
@@ -59,6 +64,7 @@ func (p *Pacman) Run(maze *structures.Maze) {
 			p.sprites.Advance()
 		}
 		prevDirection = p.direction
+		p.dirMutex.Unlock()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
 }
@@ -106,7 +112,7 @@ func InitPacman(x, y int) (*Pacman, error) {
 	seq, err := structures.InitSpriteSequence(sprites)
 	pacman.x = x
 	pacman.y = y
-	pacman.speed = 5
+	pacman.speed = constants.DefaultPacmanFPS
 	pacman.direction = constants.DirLeft
 	pacman.sprites = seq
 	pacman.animator = modules.InitAnimator(&pacman)
