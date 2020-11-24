@@ -85,7 +85,9 @@ func (l *Level) Run() {
 	// wait := make(chan struct{})
 	// l.soundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
 	// <-wait
+	// close(wait)
 
+	l.soundPlayer.PlayOnLoop(constants.GhostSiren)
 	levelMsg := make(chan constants.EventType)
 	go l.player.Run(l.maze, levelMsg)
 	for _, enemy := range l.enemies {

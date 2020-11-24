@@ -10,6 +10,20 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
+// InfiniteAudioPlayer represents an infinite audio playing on loop
+type InfiniteAudioPlayer struct {
+	keepPlaying   bool
+	currentPlayer *audio.Player
+}
+
+// Stop infinite audio player
+func (p *InfiniteAudioPlayer) Stop() {
+	if p.currentPlayer != nil {
+		p.currentPlayer.Pause()
+	}
+	p.keepPlaying = false
+}
+
 // SoundPlayer represents the global sound player of the app
 type SoundPlayer struct {
 	audioContext *audio.Context
@@ -25,14 +39,31 @@ func (s *SoundPlayer) playSound(effect constants.SoundEffect) *audio.Player {
 	return audioPlayer
 }
 
+// PlayOnLoop the specified sound effect
+func (s *SoundPlayer) PlayOnLoop(effect constants.SoundEffect) *InfiniteAudioPlayer {
+	player := &InfiniteAudioPlayer{
+		keepPlaying: true,
+	}
+	go func() {
+		wait := make(chan struct{})
+		for player.keepPlaying {
+			player.currentPlayer = s.PlayOnceAndNotify(effect, wait)
+			<-wait
+		}
+		close(wait)
+	}()
+	return player
+}
+
 // PlayOnceAndNotify when the sound has stopped
-func (s *SoundPlayer) PlayOnceAndNotify(effect constants.SoundEffect, ready chan<- struct{}) {
+func (s *SoundPlayer) PlayOnceAndNotify(effect constants.SoundEffect, ready chan<- struct{}) *audio.Player {
 	audioPlayer := s.playSound(effect)
 	go func(player *audio.Player) {
 		for player.IsPlaying() {
 		}
 		ready <- struct{}{}
 	}(audioPlayer)
+	return audioPlayer
 }
 
 // PlayOnce the specified sound effect once

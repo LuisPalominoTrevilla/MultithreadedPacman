@@ -33,12 +33,14 @@ type SoundEffect int
 const (
 	MunchEffect SoundEffect = iota
 	GameStart
+	GhostSiren
 )
 
 // AudioFiles for each sound effect
 var AudioFiles = map[SoundEffect][]string{
 	MunchEffect: {"assets/audio/munch_1.wav", "assets/audio/munch_2.wav"},
 	GameStart:   {"assets/audio/game_start.wav"},
+	GhostSiren:  {"assets/audio/siren_1.wav"},
 }
 
 // GhostType represents a type of ghost
