@@ -2,6 +2,29 @@ package structures
 
 import "github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 
+// Position of a game object
+type Position struct {
+	x int
+	y int
+}
+
+// X getter
+func (p *Position) X() int {
+	return p.x
+}
+
+// Y getter
+func (p *Position) Y() int {
+	return p.y
+}
+
+// InitPosition of a game object
+func InitPosition(x, y int) *Position {
+	return &Position{x: x, y: y}
+}
+
+// TODO: Method to calculate distance between positions
+
 // GameObjectGroup represents a group of objects that are coexisting in the same tile
 type GameObjectGroup struct {
 	elements []interfaces.GameObject

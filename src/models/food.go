@@ -34,6 +34,11 @@ func (f *Food) IsMatrixEditable() bool {
 	return false
 }
 
+// IsUnmovable by any force
+func (f *Food) IsUnmovable() bool {
+	return false
+}
+
 // InitFood of the maze
 func InitFood(isSuper bool) (*Food, error) {
 	food := Food{}

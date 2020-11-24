@@ -33,6 +33,11 @@ func (w *Wall) IsMatrixEditable() bool {
 	return false
 }
 
+// IsUnmovable by any force
+func (w *Wall) IsUnmovable() bool {
+	return true
+}
+
 // InitWall of the maze
 func InitWall() (*Wall, error) {
 	wall := Wall{}

@@ -63,6 +63,11 @@ type Direction struct {
 	Y int
 }
 
+// IsOpposite to a given direction
+func (d Direction) IsOpposite(other Direction) bool {
+	return d.X*-1 == other.X && d.Y*-1 == other.Y
+}
+
 // DirUp - direction upwards
 // DirDown - direction downwards
 // DirLeft - direction left
@@ -74,3 +79,11 @@ var (
 	DirRight  = Direction{X: 1, Y: 0}
 	DirStatic = Direction{X: 0, Y: 0}
 )
+
+// PossibleDirections to move
+var PossibleDirections = []Direction{
+	DirUp,
+	DirDown,
+	DirLeft,
+	DirRight,
+}

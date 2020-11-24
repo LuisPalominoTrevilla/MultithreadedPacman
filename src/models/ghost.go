@@ -23,13 +23,8 @@ type Ghost struct {
 	collisionDetector *modules.CollisionDetector
 }
 
-func (g *Ghost) pickRandomDirection() constants.Direction {
-	allDirections := []constants.Direction{
-		constants.DirUp,
-		constants.DirDown,
-		constants.DirLeft,
-		constants.DirRight,
-	}
+func pickRandomDirection() constants.Direction {
+	allDirections := constants.PossibleDirections
 	rand.Seed(time.Now().UnixNano())
 	return allDirections[rand.Intn(len(allDirections))]
 }
@@ -40,22 +35,49 @@ func (g *Ghost) advanceSprites() {
 	}
 }
 
+func (g *Ghost) attemptChangeDirection() {
+	viableTiles := g.collisionDetector.ViableTiles()
+	options := len(viableTiles)
+	if options == 0 {
+		return
+	}
+	tmp := make([]constants.Direction, 0)
+	for direction := range viableTiles {
+		if options == 1 && direction == g.direction {
+			return
+		}
+		tmp = append(tmp, direction)
+	}
+	rand.Seed(time.Now().UnixNano())
+	selected := tmp[rand.Intn(len(tmp))]
+	g.direction = selected
+}
+
 // Run the behavior of the player
 func (g *Ghost) Run(gameContext *contexts.GameContext) {
 	if g.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
 	}
 
+	prevDirection := g.direction
+	recentlyChangedDirection := false
 	for {
 		gameContext.MazeMutex.Lock()
-		target := g.collisionDetector.DetectCollision()
-		switch target.(type) {
-		case *Wall:
-			g.direction = g.pickRandomDirection()
-		default:
-			gameContext.Maze.MoveElement(g, false)
-			g.advanceSprites()
+		if !recentlyChangedDirection {
+			g.attemptChangeDirection()
 		}
+		recentlyChangedDirection = g.direction != prevDirection
+		if !recentlyChangedDirection {
+			target := g.collisionDetector.DetectCollision()
+			switch target.(type) {
+			case *Wall:
+				g.direction = pickRandomDirection()
+			default:
+				gameContext.Maze.MoveElement(g, false)
+				g.advanceSprites()
+			}
+		}
+		prevDirection = g.direction
 		gameContext.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
 	}
@@ -89,6 +111,11 @@ func (g *Ghost) GetDirection() constants.Direction {
 
 // IsMatrixEditable based on the object direction
 func (g *Ghost) IsMatrixEditable() bool {
+	return false
+}
+
+// IsUnmovable by any force
+func (g *Ghost) IsUnmovable() bool {
 	return false
 }
 
@@ -129,7 +156,7 @@ func InitGhost(x, y int, ghostType constants.GhostType) (*Ghost, error) {
 		ghost.sprites[category] = seq
 	}
 
-	ghost.direction = ghost.pickRandomDirection()
+	ghost.direction = pickRandomDirection()
 	ghost.animator = modules.InitAnimator(&ghost)
 	return &ghost, nil
 }

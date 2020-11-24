@@ -113,6 +113,11 @@ func (p *Pacman) IsMatrixEditable() bool {
 	return true
 }
 
+// IsUnmovable by any force
+func (p *Pacman) IsUnmovable() bool {
+	return false
+}
+
 // GetPosition of the element
 func (p *Pacman) GetPosition() (x, y int) {
 	return p.x, p.y

@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/utils"
@@ -10,6 +11,31 @@ import (
 type CollisionDetector struct {
 	source interfaces.MovableGameObject
 	maze   *structures.Maze
+}
+
+// ViableTiles by direction to take from the current movable object's position
+func (c *CollisionDetector) ViableTiles() map[constants.Direction]*structures.Position {
+	fromX, fromY := c.source.GetPosition()
+	cols, rows := c.maze.Dimensions()
+	viableTiles := make(map[constants.Direction]*structures.Position)
+	for _, direction := range constants.PossibleDirections {
+		if direction.IsOpposite(c.source.GetDirection()) {
+			continue
+		}
+		toX := utils.Mod(fromX+direction.X, cols)
+		toY := utils.Mod(fromY+direction.Y, rows)
+		elementsAtDestination := c.maze.ElementsAt(toX, toY)
+		if elementsAtDestination == nil {
+			continue
+		}
+		target := elementsAtDestination.ElementOnTop()
+		if target != nil && target.IsUnmovable() {
+			continue
+		}
+		viableTiles[direction] = structures.InitPosition(toX, toY)
+	}
+
+	return viableTiles
 }
 
 // DetectCollision given the direction of the object
