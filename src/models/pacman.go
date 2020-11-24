@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,7 +21,6 @@ type Pacman struct {
 	sprites           *structures.SpriteSequence
 	animator          *modules.Animator
 	collisionDetector *modules.CollisionDetector
-	soundPlayer       *modules.SoundPlayer
 }
 
 func (p *Pacman) keyListener() {
@@ -52,35 +52,31 @@ func (p *Pacman) keyListener() {
 // Retries once if collision is a wall to stop users from switching to a colliding direction
 func (p *Pacman) handleCollisions(
 	prevDirection constants.Direction,
-	maze *structures.Maze,
-	msg chan<- constants.EventType,
+	gameContext *contexts.GameContext,
 ) {
 	target := p.collisionDetector.DetectCollision()
 	switch target.(type) {
 	case *Wall:
 		if p.direction != prevDirection {
 			p.direction = prevDirection
-			p.handleCollisions(prevDirection, maze, msg)
+			p.handleCollisions(prevDirection, gameContext)
 		}
 	case *Food:
 		// TODO: increment score, set appropriate state if food is super food
-		maze.MoveElement(p, true)
+		gameContext.Maze.MoveElement(p, true)
 		p.sprites.Advance()
-		p.soundPlayer.PlayOnce(constants.MunchEffect)
-		msg <- constants.FoodEaten
+		gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
+		gameContext.Msg <- constants.FoodEaten
 	default:
-		maze.MoveElement(p, false)
+		gameContext.Maze.MoveElement(p, false)
 		p.sprites.Advance()
 	}
 }
 
 // Run the behavior of the player
-func (p *Pacman) Run(maze *structures.Maze, msg chan<- constants.EventType) {
+func (p *Pacman) Run(gameContext *contexts.GameContext) {
 	if p.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
-	}
-	if p.soundPlayer == nil {
-		log.Fatal("Sound player is not attached")
 	}
 
 	prevDirection := p.direction
@@ -90,7 +86,7 @@ func (p *Pacman) Run(maze *structures.Maze, msg chan<- constants.EventType) {
 		if p.keyDirection != constants.DirStatic {
 			p.direction = p.keyDirection
 		}
-		p.handleCollisions(prevDirection, maze, msg)
+		p.handleCollisions(prevDirection, gameContext)
 		prevDirection = p.direction
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
@@ -130,11 +126,6 @@ func (p *Pacman) SetPosition(x, y int) {
 // AttachCollisionDetector to the element
 func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDetector) {
 	p.collisionDetector = collisionDetector
-}
-
-// AttachSoundPlayer to the element
-func (p *Pacman) AttachSoundPlayer(soundPlayer *modules.SoundPlayer) {
-	p.soundPlayer = soundPlayer
 }
 
 // InitPacman player for the level

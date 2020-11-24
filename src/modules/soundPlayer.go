@@ -50,7 +50,6 @@ func (s *SoundPlayer) PlayOnLoop(effect constants.SoundEffect) *InfiniteAudioPla
 			player.currentPlayer = s.PlayOnceAndNotify(effect, wait)
 			<-wait
 		}
-		close(wait)
 	}()
 	return player
 }
