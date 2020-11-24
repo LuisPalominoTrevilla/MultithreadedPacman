@@ -2,6 +2,7 @@ package models
 
 import (
 	"log"
+	"math"
 	"math/rand"
 	"time"
 
@@ -35,21 +36,27 @@ func (g *Ghost) advanceSprites() {
 	}
 }
 
-func (g *Ghost) attemptChangeDirection() {
+func (g *Ghost) attemptChangeDirection(gameContext *contexts.GameContext) {
+	if gameContext.MainPlayer == nil {
+		return
+	}
 	viableTiles := g.collisionDetector.ViableTiles()
 	options := len(viableTiles)
 	if options == 0 {
 		return
 	}
-	tmp := make([]constants.Direction, 0)
-	for direction := range viableTiles {
+	var selected constants.Direction
+	shortestDistance := math.MaxFloat64
+	for direction, position := range viableTiles {
 		if options == 1 && direction == g.direction {
 			return
 		}
-		tmp = append(tmp, direction)
+		currentDistance := position.DistanceTo(gameContext.MainPlayer.GetPosition())
+		if currentDistance < shortestDistance {
+			shortestDistance = currentDistance
+			selected = direction
+		}
 	}
-	rand.Seed(time.Now().UnixNano())
-	selected := tmp[rand.Intn(len(tmp))]
 	g.direction = selected
 }
 
@@ -64,7 +71,7 @@ func (g *Ghost) Run(gameContext *contexts.GameContext) {
 	for {
 		gameContext.MazeMutex.Lock()
 		if !recentlyChangedDirection {
-			g.attemptChangeDirection()
+			g.attemptChangeDirection(gameContext)
 		}
 		recentlyChangedDirection = g.direction != prevDirection
 		if !recentlyChangedDirection {

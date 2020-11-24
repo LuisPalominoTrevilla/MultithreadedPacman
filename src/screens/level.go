@@ -46,6 +46,7 @@ func (l *Level) parseLevel(file string) error {
 					return err
 				}
 				player.AttachCollisionDetector(modules.InitCollisionDetector(player, l.context.Maze))
+				l.context.MainPlayer = player
 				l.player = player
 				l.context.Maze.AddElement(row, col, player)
 			case 'G':

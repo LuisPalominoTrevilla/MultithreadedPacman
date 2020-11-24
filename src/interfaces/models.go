@@ -11,6 +11,7 @@ type Location interface {
 	Y() int
 	SetX(x int)
 	SetY(y int)
+	DistanceTo(Location) float64
 }
 
 // GameObject interface exposes basic methods for each object inside the maze
