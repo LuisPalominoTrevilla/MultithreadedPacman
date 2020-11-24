@@ -6,6 +6,7 @@ import (
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -13,8 +14,7 @@ import (
 
 // Pacman represents the player
 type Pacman struct {
-	x                 int
-	y                 int
+	position          interfaces.Location
 	speed             int
 	keyDirection      constants.Direction
 	direction         constants.Direction
@@ -119,14 +119,14 @@ func (p *Pacman) IsUnmovable() bool {
 }
 
 // GetPosition of the element
-func (p *Pacman) GetPosition() (x, y int) {
-	return p.x, p.y
+func (p *Pacman) GetPosition() interfaces.Location {
+	return p.position
 }
 
 // SetPosition of the element
 func (p *Pacman) SetPosition(x, y int) {
-	p.x = x
-	p.y = y
+	p.position.SetX(x)
+	p.position.SetY(y)
 }
 
 // AttachCollisionDetector to the element
@@ -137,8 +137,7 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
 	pacman := Pacman{
-		x:            x,
-		y:            y,
+		position:     structures.InitPosition(x, y),
 		speed:        constants.DefaultPacmanFPS,
 		direction:    constants.DirLeft,
 		keyDirection: constants.DirLeft,

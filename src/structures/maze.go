@@ -23,8 +23,8 @@ func (m *Maze) Dimensions() (width, height int) {
 
 // MoveElement within the maze without checking whether the move is appropriate
 func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement bool) {
-	fromX, fromY := elem.GetPosition()
-	sourceGroup := m.logicMap[fromY][fromX]
+	from := elem.GetPosition()
+	sourceGroup := m.logicMap[from.Y()][from.X()]
 
 	valid := sourceGroup.RemoveElement(elem)
 	if !valid {
@@ -33,8 +33,8 @@ func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement boo
 	}
 
 	direction := elem.GetDirection()
-	toX := utils.Mod(fromX+direction.X, m.cols)
-	toY := utils.Mod(fromY+direction.Y, m.rows)
+	toX := utils.Mod(from.X()+direction.X, m.cols)
+	toY := utils.Mod(from.Y()+direction.Y, m.rows)
 	destinationGroup := m.logicMap[toY][toX]
 	if delDestElement {
 		// TODO: Dispose of the sprite of the removed element

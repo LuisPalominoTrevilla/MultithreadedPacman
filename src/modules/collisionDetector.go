@@ -15,15 +15,15 @@ type CollisionDetector struct {
 
 // ViableTiles by direction to take from the current movable object's position
 func (c *CollisionDetector) ViableTiles() map[constants.Direction]*structures.Position {
-	fromX, fromY := c.source.GetPosition()
+	from := c.source.GetPosition()
 	cols, rows := c.maze.Dimensions()
 	viableTiles := make(map[constants.Direction]*structures.Position)
 	for _, direction := range constants.PossibleDirections {
 		if direction.IsOpposite(c.source.GetDirection()) {
 			continue
 		}
-		toX := utils.Mod(fromX+direction.X, cols)
-		toY := utils.Mod(fromY+direction.Y, rows)
+		toX := utils.Mod(from.X()+direction.X, cols)
+		toY := utils.Mod(from.Y()+direction.Y, rows)
 		elementsAtDestination := c.maze.ElementsAt(toX, toY)
 		if elementsAtDestination == nil {
 			continue
@@ -40,11 +40,11 @@ func (c *CollisionDetector) ViableTiles() map[constants.Direction]*structures.Po
 
 // DetectCollision given the direction of the object
 func (c *CollisionDetector) DetectCollision() interfaces.GameObject {
-	fromX, fromY := c.source.GetPosition()
+	from := c.source.GetPosition()
 	direction := c.source.GetDirection()
 	cols, rows := c.maze.Dimensions()
-	toX := utils.Mod(fromX+direction.X, cols)
-	toY := utils.Mod(fromY+direction.Y, rows)
+	toX := utils.Mod(from.X()+direction.X, cols)
+	toY := utils.Mod(from.Y()+direction.Y, rows)
 	elementsAtDestination := c.maze.ElementsAt(toX, toY)
 	if elementsAtDestination == nil {
 		return nil

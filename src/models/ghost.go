@@ -7,6 +7,7 @@ import (
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,8 +15,7 @@ import (
 
 // Ghost represents the main enemy
 type Ghost struct {
-	x                 int
-	y                 int
+	position          interfaces.Location
 	speed             int
 	direction         constants.Direction
 	sprites           map[string]*structures.SpriteSequence
@@ -120,14 +120,14 @@ func (g *Ghost) IsUnmovable() bool {
 }
 
 // GetPosition of the element
-func (g *Ghost) GetPosition() (x, y int) {
-	return g.x, g.y
+func (g *Ghost) GetPosition() interfaces.Location {
+	return g.position
 }
 
 // SetPosition of the element
 func (g *Ghost) SetPosition(x, y int) {
-	g.x = x
-	g.y = y
+	g.position.SetX(x)
+	g.position.SetY(y)
 }
 
 // AttachCollisionDetector to the element
@@ -138,10 +138,9 @@ func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDete
 // InitGhost enemy for the level
 func InitGhost(x, y int, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
-		x:       x,
-		y:       y,
-		speed:   constants.InitialGhostFPS,
-		sprites: make(map[string]*structures.SpriteSequence),
+		position: structures.InitPosition(x, y),
+		speed:    constants.InitialGhostFPS,
+		sprites:  make(map[string]*structures.SpriteSequence),
 	}
 	categories := []string{"left", "right", "down", "up"}
 	for _, category := range categories {

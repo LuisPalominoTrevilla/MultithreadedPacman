@@ -5,6 +5,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// Location interface exposes basic methods exclusive to a location
+type Location interface {
+	X() int
+	Y() int
+	SetX(x int)
+	SetY(y int)
+}
+
 // GameObject interface exposes basic methods for each object inside the maze
 type GameObject interface {
 	Draw(screen *ebiten.Image, x, y int)
@@ -21,6 +29,6 @@ type MovableGameObject interface {
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
 	IsUnmovable() bool
-	GetPosition() (x, y int)
+	GetPosition() Location
 	SetPosition(x, y int)
 }
