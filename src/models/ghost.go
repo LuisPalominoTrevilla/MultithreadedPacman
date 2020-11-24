@@ -1,9 +1,12 @@
 package models
 
 import (
+	"log"
+	"math/rand"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,12 +14,24 @@ import (
 
 // Ghost represents the main enemy
 type Ghost struct {
-	x         int
-	y         int
-	speed     int
-	direction constants.Direction
-	sprites   map[string]*structures.SpriteSequence
-	animator  *modules.Animator
+	x                 int
+	y                 int
+	speed             int
+	direction         constants.Direction
+	sprites           map[string]*structures.SpriteSequence
+	animator          *modules.Animator
+	collisionDetector *modules.CollisionDetector
+}
+
+func (g *Ghost) pickRandomDirection() constants.Direction {
+	allDirections := []constants.Direction{
+		constants.DirUp,
+		constants.DirDown,
+		constants.DirLeft,
+		constants.DirRight,
+	}
+	rand.Seed(time.Now().UnixNano())
+	return allDirections[rand.Intn(len(allDirections))]
 }
 
 func (g *Ghost) advanceSprites() {
@@ -26,9 +41,22 @@ func (g *Ghost) advanceSprites() {
 }
 
 // Run the behavior of the player
-func (g *Ghost) Run() {
+func (g *Ghost) Run(gameContext *contexts.GameContext) {
+	if g.collisionDetector == nil {
+		log.Fatal("Collision detector is not attached")
+	}
+
 	for {
-		g.advanceSprites()
+		gameContext.MazeMutex.Lock()
+		target := g.collisionDetector.DetectCollision()
+		switch target.(type) {
+		case *Wall:
+			g.direction = g.pickRandomDirection()
+		default:
+			gameContext.Maze.MoveElement(g, false)
+			g.advanceSprites()
+		}
+		gameContext.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
 	}
 }
@@ -64,14 +92,29 @@ func (g *Ghost) IsMatrixEditable() bool {
 	return false
 }
 
+// GetPosition of the element
+func (g *Ghost) GetPosition() (x, y int) {
+	return g.x, g.y
+}
+
+// SetPosition of the element
+func (g *Ghost) SetPosition(x, y int) {
+	g.x = x
+	g.y = y
+}
+
+// AttachCollisionDetector to the element
+func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDetector) {
+	g.collisionDetector = collisionDetector
+}
+
 // InitGhost enemy for the level
 func InitGhost(x, y int, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
-		x:         x,
-		y:         y,
-		speed:     constants.InitialGhostFPS,
-		direction: constants.DirStatic,
-		sprites:   make(map[string]*structures.SpriteSequence),
+		x:       x,
+		y:       y,
+		speed:   constants.InitialGhostFPS,
+		sprites: make(map[string]*structures.SpriteSequence),
 	}
 	categories := []string{"left", "right", "down", "up"}
 	for _, category := range categories {
@@ -86,6 +129,7 @@ func InitGhost(x, y int, ghostType constants.GhostType) (*Ghost, error) {
 		ghost.sprites[category] = seq
 	}
 
+	ghost.direction = ghost.pickRandomDirection()
 	ghost.animator = modules.InitAnimator(&ghost)
 	return &ghost, nil
 }

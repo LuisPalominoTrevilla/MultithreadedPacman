@@ -54,6 +54,7 @@ func (l *Level) parseLevel(file string) error {
 				if err != nil {
 					return err
 				}
+				ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.context.Maze))
 				l.enemies = append(l.enemies, ghost)
 				l.context.Maze.AddElement(row, col, ghost)
 			case '.', '@':
@@ -82,13 +83,13 @@ func (l *Level) Size() (width, height int) {
 func (l *Level) Run() {
 	// TODO: Uncomment lines to play initial sound of level
 	// wait := make(chan struct{})
-	// l.soundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
+	// l.context.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
 	// <-wait
 
 	l.context.SoundPlayer.PlayOnLoop(constants.GhostSiren)
 	go l.player.Run(l.context)
 	for _, enemy := range l.enemies {
-		go enemy.Run()
+		go enemy.Run(l.context)
 	}
 	for {
 		<-l.context.Msg

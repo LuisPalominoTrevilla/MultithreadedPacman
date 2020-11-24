@@ -82,12 +82,13 @@ func (p *Pacman) Run(gameContext *contexts.GameContext) {
 	prevDirection := p.direction
 	go p.keyListener()
 	for {
-		// TODO: set mutex here to protect access to move elements in maze
+		gameContext.MazeMutex.Lock()
 		if p.keyDirection != constants.DirStatic {
 			p.direction = p.keyDirection
 		}
 		p.handleCollisions(prevDirection, gameContext)
 		prevDirection = p.direction
+		gameContext.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
 }
