@@ -58,7 +58,7 @@ func (m *Maze) Draw(screen *ebiten.Image) {
 	for i := 0; i < m.rows; i++ {
 		for j := 0; j < m.cols; j++ {
 			groupObject := m.logicMap[i][j]
-			if object := groupObject.ElementOnTop(); object != nil {
+			for _, object := range groupObject.Elements() {
 				object.Draw(screen, j, i)
 			}
 		}

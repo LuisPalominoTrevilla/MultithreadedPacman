@@ -45,6 +45,13 @@ func (g *GameObjectGroup) ElementOnTop() interfaces.GameObject {
 	return g.elements[len(g.elements)-1]
 }
 
+// Elements copy of the game object
+func (g *GameObjectGroup) Elements() []interfaces.GameObject {
+	elems := make([]interfaces.GameObject, len(g.elements))
+	copy(elems, g.elements)
+	return elems
+}
+
 // AddElement on top of the group object
 func (g *GameObjectGroup) AddElement(object interfaces.GameObject) {
 	g.elements = append(g.elements, object)
