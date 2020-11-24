@@ -29,6 +29,11 @@ func (f *Food) GetDirection() constants.Direction {
 	return constants.DirStatic
 }
 
+// IsMatrixEditable based on the object direction
+func (f *Food) IsMatrixEditable() bool {
+	return false
+}
+
 // InitFood of the maze
 func InitFood(isSuper bool) (*Food, error) {
 	food := Food{}

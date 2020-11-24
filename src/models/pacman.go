@@ -111,6 +111,11 @@ func (p *Pacman) GetDirection() constants.Direction {
 	return p.direction
 }
 
+// IsMatrixEditable based on the object direction
+func (p *Pacman) IsMatrixEditable() bool {
+	return true
+}
+
 // GetPosition of the element
 func (p *Pacman) GetPosition() (x, y int) {
 	return p.x, p.y
@@ -134,7 +139,13 @@ func (p *Pacman) AttachSoundPlayer(soundPlayer *modules.SoundPlayer) {
 
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
-	pacman := Pacman{}
+	pacman := Pacman{
+		x:            x,
+		y:            y,
+		speed:        constants.DefaultPacmanFPS,
+		direction:    constants.DirLeft,
+		keyDirection: constants.DirLeft,
+	}
 	sprites := []string{
 		"assets/pacman/pacman-1.png",
 		"assets/pacman/pacman-2.png",
@@ -142,11 +153,6 @@ func InitPacman(x, y int) (*Pacman, error) {
 		"assets/pacman/pacman-2.png",
 	}
 	seq, err := structures.InitSpriteSequence(sprites)
-	pacman.x = x
-	pacman.y = y
-	pacman.speed = constants.DefaultPacmanFPS
-	pacman.direction = constants.DirLeft
-	pacman.keyDirection = constants.DirLeft
 	pacman.sprites = seq
 	pacman.animator = modules.InitAnimator(&pacman)
 	return &pacman, err

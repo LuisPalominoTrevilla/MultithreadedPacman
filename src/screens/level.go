@@ -16,6 +16,7 @@ type Level struct {
 	maze        *structures.Maze
 	soundPlayer *modules.SoundPlayer
 	player      *models.Pacman
+	enemies     []*models.Ghost
 }
 
 func (l *Level) parseLevel(file string) error {
@@ -48,6 +49,14 @@ func (l *Level) parseLevel(file string) error {
 				player.AttachSoundPlayer(l.soundPlayer)
 				l.player = player
 				l.maze.AddElement(row, col, player)
+			case 'G':
+				// TODO: Create specified number of enemies (randomize ghost types)
+				ghost, err := models.InitGhost(col, row, constants.RedGhost)
+				if err != nil {
+					return err
+				}
+				l.enemies = append(l.enemies, ghost)
+				l.maze.AddElement(row, col, ghost)
 			case '.', '@':
 				food, err := models.InitFood(elem == '@')
 				if err != nil {
@@ -79,6 +88,9 @@ func (l *Level) Run() {
 
 	levelMsg := make(chan constants.EventType)
 	go l.player.Run(l.maze, levelMsg)
+	for _, enemy := range l.enemies {
+		go enemy.Run()
+	}
 	for {
 		<-levelMsg
 		// TODO: switch case to detect what message was sent
@@ -93,7 +105,10 @@ func (l *Level) Draw(screen *ebiten.Image) {
 
 // InitLevel given a valid level file
 func InitLevel(levelFile string) (*Level, error) {
-	l := Level{}
+	// TODO: Init ghost array with capacity to hold all specified ghosts
+	l := Level{
+		enemies: make([]*models.Ghost, 0),
+	}
 	soundPlayer, err := modules.InitSoundPlayer()
 	if err != nil {
 		return nil, err

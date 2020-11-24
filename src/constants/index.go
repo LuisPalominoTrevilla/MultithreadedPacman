@@ -4,6 +4,7 @@ package constants
 const (
 	TileSize         = 32
 	DefaultPacmanFPS = 6
+	InitialGhostFPS  = 6
 )
 
 // GameState represents the game state
@@ -39,6 +40,20 @@ var AudioFiles = map[SoundEffect][]string{
 	MunchEffect: {"assets/audio/munch_1.wav", "assets/audio/munch_2.wav"},
 	GameStart:   {"assets/audio/game_start.wav"},
 }
+
+// GhostType represents a type of ghost
+type GhostType string
+
+// RedGhost - The classic pacman red ghost
+// CyanGhost - The classic pacman cyan ghost
+// PinkGhost - The classic pacman pink ghost
+// OrangeGhost - The classic pacman orange ghost
+const (
+	RedGhost    GhostType = "red"
+	CyanGhost   GhostType = "cyan"
+	PinkGhost   GhostType = "pink"
+	OrangeGhost GhostType = "orange"
+)
 
 // Direction expresses a direction
 type Direction struct {

@@ -10,6 +10,7 @@ type GameObject interface {
 	Draw(screen *ebiten.Image, x, y int)
 	GetSprite() *ebiten.Image
 	GetDirection() constants.Direction
+	IsMatrixEditable() bool
 }
 
 // MovableGameObject interface special tipe of GameObject
@@ -17,6 +18,7 @@ type MovableGameObject interface {
 	Draw(screen *ebiten.Image, x, y int)
 	GetSprite() *ebiten.Image
 	GetDirection() constants.Direction
+	IsMatrixEditable() bool
 	GetPosition() (x, y int)
 	SetPosition(x, y int)
 }

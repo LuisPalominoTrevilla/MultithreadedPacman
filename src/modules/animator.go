@@ -19,19 +19,21 @@ func (a *Animator) DrawFrame(screen *ebiten.Image, x, y int) {
 	frame := a.object.GetSprite()
 	width, height := frame.Size()
 	op.GeoM.Scale(constants.TileSize/float64(width), constants.TileSize/float64(height))
-	switch a.object.GetDirection() {
-	case constants.DirUp:
-		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
-		op.GeoM.Rotate(3 * math.Pi / 2)
-		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
-	case constants.DirDown:
-		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
-		op.GeoM.Rotate(math.Pi / 2)
-		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
-	case constants.DirLeft:
-		op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
-		op.GeoM.Scale(-1, 1)
-		op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
+	if a.object.IsMatrixEditable() {
+		switch a.object.GetDirection() {
+		case constants.DirUp:
+			op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
+			op.GeoM.Rotate(3 * math.Pi / 2)
+			op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
+		case constants.DirDown:
+			op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
+			op.GeoM.Rotate(math.Pi / 2)
+			op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
+		case constants.DirLeft:
+			op.GeoM.Translate(-constants.TileSize/2, -constants.TileSize/2)
+			op.GeoM.Scale(-1, 1)
+			op.GeoM.Translate(constants.TileSize/2, constants.TileSize/2)
+		}
 	}
 	op.GeoM.Translate(constants.TileSize*float64(x), constants.TileSize*float64(y))
 	screen.DrawImage(frame, op)

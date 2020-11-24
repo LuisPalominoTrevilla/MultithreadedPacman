@@ -28,6 +28,11 @@ func (w *Wall) GetDirection() constants.Direction {
 	return constants.DirStatic
 }
 
+// IsMatrixEditable based on the object direction
+func (w *Wall) IsMatrixEditable() bool {
+	return false
+}
+
 // InitWall of the maze
 func InitWall() (*Wall, error) {
 	wall := Wall{}
