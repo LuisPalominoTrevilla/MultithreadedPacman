@@ -78,11 +78,11 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					l.context.Maze.AddElement(row, col, l.enemies[i])
 				}
 			case '.', '@':
-				food, err := models.InitFood(elem == '@')
+				pellet, err := models.InitPellet(elem == '@')
 				if err != nil {
 					return err
 				}
-				l.context.Maze.AddElement(row, col, food)
+				l.context.Maze.AddElement(row, col, pellet)
 			}
 		}
 	}
@@ -124,7 +124,7 @@ func (l *Level) Run() {
 				l.backgroundSound.Replace(sirenSounds[newPhase%len(sirenSounds)])
 				l.phase = newPhase
 			}
-		case <-l.context.Msg.EatFood:
+		case <-l.context.Msg.EatPellet:
 			// TODO: increment counter and check for end game
 		}
 	}
@@ -150,7 +150,7 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 		enemies: make([]*models.Ghost, 0, numEnemies),
 		context: &contexts.GameContext{
 			Msg: &structures.MessageBroker{
-				EatFood:     make(chan struct{}),
+				EatPellet:   make(chan struct{}),
 				PhaseChange: make(chan int),
 			},
 		},

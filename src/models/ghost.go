@@ -55,14 +55,14 @@ func (g *Ghost) orientedSprite() *ebiten.Image {
 }
 
 // ChangeState given an event
-func (g *Ghost) ChangeState(event constants.EventType) {
+func (g *Ghost) ChangeState(event constants.StateEvent) {
 	newState := g.state.ApplyTransition(event)
 	if newState != nil {
 		g.state = newState
 	}
 }
 
-func (g *Ghost) attemptChangeDirection(target interfaces.MovableGameObject) {
+func (g *Ghost) attemptChangeDirection(target interfaces.Location) {
 	viableTiles := g.collisionDetector.ViableTiles()
 	options := len(viableTiles)
 	if options == 0 {
@@ -79,7 +79,7 @@ func (g *Ghost) attemptChangeDirection(target interfaces.MovableGameObject) {
 			directions = append(directions, direction)
 			continue
 		}
-		currentDistance := position.DistanceTo(target.GetPosition())
+		currentDistance := position.DistanceTo(target)
 		if currentDistance < shortestDistance {
 			shortestDistance = currentDistance
 			selected = direction

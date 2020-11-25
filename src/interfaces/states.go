@@ -7,7 +7,7 @@ import (
 
 // GhostState represents a ghost state
 type GhostState interface {
-	ApplyTransition(event constants.EventType) GhostState
+	ApplyTransition(event constants.StateEvent) GhostState
 	Run()
 	GetSprite() *ebiten.Image
 }

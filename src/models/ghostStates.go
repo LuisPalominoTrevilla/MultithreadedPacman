@@ -34,12 +34,12 @@ func getStateInstance(
 type Idle struct {
 	ghost       *Ghost
 	gameContext *contexts.GameContext
-	transitions map[constants.EventType]constants.GhostState
+	transitions map[constants.StateEvent]constants.GhostState
 	createdAt   time.Time
 }
 
 // ApplyTransition given an event
-func (i *Idle) ApplyTransition(event constants.EventType) interfaces.GhostState {
+func (i *Idle) ApplyTransition(event constants.StateEvent) interfaces.GhostState {
 	state, found := i.transitions[event]
 	if !found {
 		return i
@@ -66,7 +66,7 @@ func InitIdle(ghost *Ghost, ctx *contexts.GameContext) *Idle {
 	idle := Idle{
 		ghost:       ghost,
 		gameContext: ctx,
-		transitions: make(map[constants.EventType]constants.GhostState),
+		transitions: make(map[constants.StateEvent]constants.GhostState),
 		createdAt:   time.Now(),
 	}
 	idle.transitions[constants.Scatter] = constants.ScatterState
@@ -82,14 +82,14 @@ type Scatter struct {
 	state                    constants.GhostState
 	ghost                    *Ghost
 	gameContext              *contexts.GameContext
-	transitions              map[constants.EventType]constants.GhostState
+	transitions              map[constants.StateEvent]constants.GhostState
 	createdAt                time.Time
 	prevDirection            constants.Direction
 	recentlyChangedDirection bool
 }
 
 // ApplyTransition given an event
-func (s *Scatter) ApplyTransition(event constants.EventType) interfaces.GhostState {
+func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostState {
 	state, found := s.transitions[event]
 	if !found {
 		return s
@@ -132,7 +132,7 @@ func InitScatter(ghost *Ghost, ctx *contexts.GameContext) *Scatter {
 	scatter := Scatter{
 		ghost:                    ghost,
 		gameContext:              ctx,
-		transitions:              make(map[constants.EventType]constants.GhostState),
+		transitions:              make(map[constants.StateEvent]constants.GhostState),
 		createdAt:                time.Now(),
 		prevDirection:            ghost.direction,
 		recentlyChangedDirection: false,
@@ -150,14 +150,14 @@ type Chase struct {
 	state                    constants.GhostState
 	ghost                    *Ghost
 	gameContext              *contexts.GameContext
-	transitions              map[constants.EventType]constants.GhostState
+	transitions              map[constants.StateEvent]constants.GhostState
 	createdAt                time.Time
 	prevDirection            constants.Direction
 	recentlyChangedDirection bool
 }
 
 // ApplyTransition given an event
-func (c *Chase) ApplyTransition(event constants.EventType) interfaces.GhostState {
+func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostState {
 	state, found := c.transitions[event]
 	if !found {
 		return c
@@ -170,7 +170,7 @@ func (c *Chase) ApplyTransition(event constants.EventType) interfaces.GhostState
 func (c *Chase) Run() {
 	c.gameContext.MazeMutex.Lock()
 	if !c.recentlyChangedDirection {
-		c.ghost.attemptChangeDirection(c.gameContext.MainPlayer)
+		c.ghost.attemptChangeDirection(c.gameContext.MainPlayer.GetPosition())
 	}
 	c.recentlyChangedDirection = c.ghost.direction != c.prevDirection
 	if !c.recentlyChangedDirection {
@@ -203,7 +203,7 @@ func InitChase(ghost *Ghost, ctx *contexts.GameContext) *Chase {
 	chase := Chase{
 		ghost:                    ghost,
 		gameContext:              ctx,
-		transitions:              make(map[constants.EventType]constants.GhostState),
+		transitions:              make(map[constants.StateEvent]constants.GhostState),
 		createdAt:                time.Now(),
 		prevDirection:            ghost.direction,
 		recentlyChangedDirection: false,

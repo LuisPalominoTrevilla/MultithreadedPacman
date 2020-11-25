@@ -22,17 +22,13 @@ const (
 	PlayState
 )
 
-// EventType represents a type of event
-type EventType int
+// StateEvent represents a type of event
+type StateEvent int
 
-// EatFood - Indicates a food was eaten
 // Scatter - Whenever a ghost starts scattering
 // ChasePacman - Whenever a ghost starts chasing pacman
-// PhaseChange - Whenever a ghost reaches a new phase
 const (
-	EatFood EventType = iota
-	PhaseChange
-	Scatter
+	Scatter StateEvent = iota
 	ChasePacman
 )
 

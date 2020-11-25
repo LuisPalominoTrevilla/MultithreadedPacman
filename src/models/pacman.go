@@ -61,12 +61,12 @@ func (p *Pacman) handleCollisions(
 			p.direction = prevDirection
 			p.handleCollisions(prevDirection, gameContext)
 		}
-	case *Food:
-		// TODO: increment score, set appropriate state if food is super food
+	case *Pellet:
+		// TODO: increment score, set appropriate state if pellet was power pellet
 		gameContext.Maze.MoveElement(p, true)
 		p.sprites.Advance()
 		gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		gameContext.Msg.EatFood <- struct{}{}
+		gameContext.Msg.EatPellet <- struct{}{}
 	default:
 		gameContext.Maze.MoveElement(p, false)
 		p.sprites.Advance()
