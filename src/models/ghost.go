@@ -16,8 +16,10 @@ import (
 
 // Ghost represents the main enemy
 type Ghost struct {
+	state             interfaces.GhostState
 	position          interfaces.Location
 	speed             int
+	idleStateTime     float64
 	direction         constants.Direction
 	sprites           map[string]*structures.SpriteSequence
 	animator          *modules.Animator
@@ -36,67 +38,7 @@ func (g *Ghost) advanceSprites() {
 	}
 }
 
-func (g *Ghost) attemptChangeDirection(gameContext *contexts.GameContext) {
-	if gameContext.MainPlayer == nil {
-		return
-	}
-	viableTiles := g.collisionDetector.ViableTiles()
-	options := len(viableTiles)
-	if options == 0 {
-		return
-	}
-	var selected constants.Direction
-	shortestDistance := math.MaxFloat64
-	for direction, position := range viableTiles {
-		if options == 1 && direction == g.direction {
-			return
-		}
-		currentDistance := position.DistanceTo(gameContext.MainPlayer.GetPosition())
-		if currentDistance < shortestDistance {
-			shortestDistance = currentDistance
-			selected = direction
-		}
-	}
-	g.direction = selected
-}
-
-// Run the behavior of the player
-func (g *Ghost) Run(gameContext *contexts.GameContext) {
-	if g.collisionDetector == nil {
-		log.Fatal("Collision detector is not attached")
-	}
-
-	prevDirection := g.direction
-	recentlyChangedDirection := false
-	for {
-		gameContext.MazeMutex.Lock()
-		if !recentlyChangedDirection {
-			g.attemptChangeDirection(gameContext)
-		}
-		recentlyChangedDirection = g.direction != prevDirection
-		if !recentlyChangedDirection {
-			target := g.collisionDetector.DetectCollision()
-			switch target.(type) {
-			case *Wall:
-				g.direction = pickRandomDirection()
-			default:
-				gameContext.Maze.MoveElement(g, false)
-				g.advanceSprites()
-			}
-		}
-		prevDirection = g.direction
-		gameContext.MazeMutex.Unlock()
-		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
-	}
-}
-
-// Draw the element to the screen in given position
-func (g *Ghost) Draw(screen *ebiten.Image, x, y int) {
-	g.animator.DrawFrame(screen, x, y)
-}
-
-// GetSprite of the element
-func (g *Ghost) GetSprite() *ebiten.Image {
+func (g *Ghost) orientedSprite() *ebiten.Image {
 	switch g.direction {
 	case constants.DirUp:
 		return g.sprites["up"].GetCurrentFrame()
@@ -109,6 +51,71 @@ func (g *Ghost) GetSprite() *ebiten.Image {
 	default:
 		return g.sprites["left"].GetCurrentFrame()
 	}
+}
+
+// ChangeState given an event
+func (g *Ghost) ChangeState(event constants.EventType) {
+	newState := g.state.ApplyTransition(event)
+	if newState != nil {
+		g.state = newState
+	}
+}
+
+func (g *Ghost) attemptChangeDirection(target interfaces.MovableGameObject) {
+	viableTiles := g.collisionDetector.ViableTiles()
+	options := len(viableTiles)
+	if options == 0 {
+		return
+	}
+	var selected constants.Direction
+	shortestDistance := math.MaxFloat64
+	directions := make([]constants.Direction, 0, len(viableTiles))
+	for direction, position := range viableTiles {
+		if options == 1 && direction == g.direction {
+			return
+		}
+		if target == nil {
+			directions = append(directions, direction)
+			continue
+		}
+		currentDistance := position.DistanceTo(target.GetPosition())
+		if currentDistance < shortestDistance {
+			shortestDistance = currentDistance
+			selected = direction
+		}
+	}
+
+	if target == nil {
+		rand.Seed(time.Now().UnixNano())
+		selected = directions[rand.Intn(len(directions))]
+	}
+	g.direction = selected
+}
+
+// Run the behavior of the ghost
+func (g *Ghost) Run(gameContext *contexts.GameContext) {
+	if g.collisionDetector == nil {
+		log.Fatal("Collision detector is not attached")
+	}
+
+	g.state = InitIdle(g, gameContext)
+	for {
+		g.state.Run()
+		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
+	}
+}
+
+// Draw the element to the screen in given position
+func (g *Ghost) Draw(screen *ebiten.Image, x, y int) {
+	g.animator.DrawFrame(screen, x, y)
+}
+
+// GetSprite of the element
+func (g *Ghost) GetSprite() *ebiten.Image {
+	if g.state == nil {
+		return g.orientedSprite()
+	}
+	return g.state.GetSprite()
 }
 
 // GetDirection of the element
@@ -143,11 +150,12 @@ func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDete
 }
 
 // InitGhost enemy for the level
-func InitGhost(x, y int, ghostType constants.GhostType) (*Ghost, error) {
+func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
-		position: structures.InitPosition(x, y),
-		speed:    constants.InitialGhostFPS,
-		sprites:  make(map[string]*structures.SpriteSequence),
+		position:      structures.InitPosition(x, y),
+		idleStateTime: idleStateTime,
+		speed:         constants.DefaultGhostFPS,
+		sprites:       make(map[string]*structures.SpriteSequence),
 	}
 	categories := []string{"left", "right", "down", "up"}
 	for _, category := range categories {

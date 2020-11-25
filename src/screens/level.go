@@ -51,7 +51,7 @@ func (l *Level) parseLevel(file string) error {
 				l.context.Maze.AddElement(row, col, player)
 			case 'G':
 				// TODO: Create specified number of enemies (randomize ghost types)
-				ghost, err := models.InitGhost(col, row, constants.RedGhost)
+				ghost, err := models.InitGhost(col, row, 0, constants.RedGhost)
 				if err != nil {
 					return err
 				}

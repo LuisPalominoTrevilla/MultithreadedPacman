@@ -2,9 +2,11 @@ package constants
 
 // TileSize represents the size of the side of a square tile
 const (
-	TileSize         = 32
-	DefaultPacmanFPS = 6
-	InitialGhostFPS  = 6
+	TileSize            = 32
+	DefaultPacmanFPS    = 6
+	DefaultGhostFPS     = 6
+	ScatterModeDuration = 7
+	ChaseModeDuration   = 20
 )
 
 // GameState represents the game state
@@ -20,16 +22,21 @@ const (
 // EventType represents a type of event
 type EventType int
 
-// FoodEaten - event that indicates a food was eaten
+// EatFood - Indicates a food was eaten
+// Scatter - Whenever a ghost starts scattering
+// ChasePacman - Whenever a ghost starts chasing pacman
 const (
-	FoodEaten EventType = iota
+	EatFood EventType = iota
+	Scatter
+	ChasePacman
 )
 
 // SoundEffect represents a type of sound effect
 type SoundEffect int
 
-// MunchEffect - pacman munch sound FX
-// GameStart - pacman's main game start theme
+// MunchEffect - Pacman munch sound FX
+// GameStart - Pacman's main game start theme
+// GhostSiren - Ghost siren sound
 const (
 	MunchEffect SoundEffect = iota
 	GameStart
@@ -55,6 +62,18 @@ const (
 	CyanGhost   GhostType = "cyan"
 	PinkGhost   GhostType = "pink"
 	OrangeGhost GhostType = "orange"
+)
+
+// GhostState represents a ghost state
+type GhostState int
+
+// IdleState - Initial ghost value
+// ScatterState - Normal ghost behavior
+// ChaseState - Behavior to chase pacman
+const (
+	IdleState GhostState = iota
+	ScatterState
+	ChaseState
 )
 
 // Direction expresses a direction

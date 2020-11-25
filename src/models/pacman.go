@@ -66,7 +66,7 @@ func (p *Pacman) handleCollisions(
 		gameContext.Maze.MoveElement(p, true)
 		p.sprites.Advance()
 		gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		gameContext.Msg <- constants.FoodEaten
+		gameContext.Msg <- constants.EatFood
 	default:
 		gameContext.Maze.MoveElement(p, false)
 		p.sprites.Advance()
