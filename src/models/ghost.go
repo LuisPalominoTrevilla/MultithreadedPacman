@@ -17,6 +17,7 @@ import (
 // Ghost represents the main enemy
 type Ghost struct {
 	state             interfaces.GhostState
+	phase             int
 	position          interfaces.Location
 	speed             int
 	idleStateTime     float64
@@ -152,6 +153,7 @@ func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDete
 // InitGhost enemy for the level
 func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
+		phase:         0,
 		position:      structures.InitPosition(x, y),
 		idleStateTime: idleStateTime,
 		speed:         constants.DefaultGhostFPS,

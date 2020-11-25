@@ -10,17 +10,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
-// InfiniteAudioPlayer represents an infinite audio playing on loop
-type InfiniteAudioPlayer struct {
+// InfiniteAudio represents an infinite audio playing on loop
+type InfiniteAudio struct {
 	keepPlaying   bool
+	queued        bool
+	nextSound     constants.SoundEffect
 	currentPlayer *audio.Player
 }
 
-// Stop infinite audio player
-func (p *InfiniteAudioPlayer) Stop() {
+// Stop infinite audio
+func (p *InfiniteAudio) Stop() {
 	if p.currentPlayer != nil {
 		p.currentPlayer.Pause()
 	}
+	p.keepPlaying = false
+}
+
+// Replace current audio playing on loop with a different one
+func (p *InfiniteAudio) Replace(effect constants.SoundEffect) {
+	p.queued = true
+	p.nextSound = effect
 	p.keepPlaying = false
 }
 
@@ -40,17 +49,26 @@ func (s *SoundPlayer) playSound(effect constants.SoundEffect) *audio.Player {
 }
 
 // PlayOnLoop the specified sound effect
-func (s *SoundPlayer) PlayOnLoop(effect constants.SoundEffect) *InfiniteAudioPlayer {
-	player := &InfiniteAudioPlayer{
+func (s *SoundPlayer) PlayOnLoop(sound constants.SoundEffect) *InfiniteAudio {
+	player := &InfiniteAudio{
 		keepPlaying: true,
 	}
-	go func() {
+	go func(effect constants.SoundEffect) {
 		wait := make(chan struct{})
-		for player.keepPlaying {
+		for {
+			if !player.keepPlaying {
+				if player.queued {
+					player.queued = false
+					player.keepPlaying = true
+					effect = player.nextSound
+				} else {
+					break
+				}
+			}
 			player.currentPlayer = s.PlayOnceAndNotify(effect, wait)
 			<-wait
 		}
-	}()
+	}(sound)
 	return player
 }
 

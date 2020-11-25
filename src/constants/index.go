@@ -6,6 +6,7 @@ const (
 	MaxGhostsAllowed    = 8
 	DefaultPacmanFPS    = 6
 	DefaultGhostFPS     = 6
+	InfiniteChasePhase  = 3
 	TimeBetweenSpawns   = 3
 	ScatterModeDuration = 7
 	ChaseModeDuration   = 20
@@ -27,8 +28,10 @@ type EventType int
 // EatFood - Indicates a food was eaten
 // Scatter - Whenever a ghost starts scattering
 // ChasePacman - Whenever a ghost starts chasing pacman
+// PhaseChange - Whenever a ghost reaches a new phase
 const (
 	EatFood EventType = iota
+	PhaseChange
 	Scatter
 	ChasePacman
 )
@@ -38,18 +41,24 @@ type SoundEffect int
 
 // MunchEffect - Pacman munch sound FX
 // GameStart - Pacman's main game start theme
-// GhostSiren - Ghost siren sound
+// GhostSirenPhaseX - Ghost siren sounds
 const (
 	MunchEffect SoundEffect = iota
 	GameStart
-	GhostSiren
+	GhostSirenPhase1
+	GhostSirenPhase2
+	GhostSirenPhase3
+	GhostSirenPhase4
 )
 
 // AudioFiles for each sound effect
 var AudioFiles = map[SoundEffect][]string{
-	MunchEffect: {"assets/audio/munch_1.wav", "assets/audio/munch_2.wav"},
-	GameStart:   {"assets/audio/game_start.wav"},
-	GhostSiren:  {"assets/audio/siren_1.wav"},
+	MunchEffect:      {"assets/audio/munch_1.wav", "assets/audio/munch_2.wav"},
+	GameStart:        {"assets/audio/game_start.wav"},
+	GhostSirenPhase1: {"assets/audio/siren_1.wav"},
+	GhostSirenPhase2: {"assets/audio/siren_2.wav"},
+	GhostSirenPhase3: {"assets/audio/siren_3.wav"},
+	GhostSirenPhase4: {"assets/audio/siren_4.wav"},
 }
 
 // GhostType represents a type of ghost

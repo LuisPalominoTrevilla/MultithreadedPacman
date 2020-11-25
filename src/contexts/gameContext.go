@@ -3,7 +3,6 @@ package contexts
 import (
 	"sync"
 
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
@@ -15,5 +14,5 @@ type GameContext struct {
 	MazeMutex   sync.Mutex
 	Maze        *structures.Maze
 	SoundPlayer *modules.SoundPlayer
-	Msg         chan constants.EventType
+	Msg         *structures.MessageBroker
 }

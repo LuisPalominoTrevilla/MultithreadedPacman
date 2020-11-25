@@ -16,9 +16,11 @@ import (
 
 // Level represents a level with all of its contents
 type Level struct {
-	context *contexts.GameContext
-	player  *models.Pacman
-	enemies []*models.Ghost
+	phase           int
+	context         *contexts.GameContext
+	player          *models.Pacman
+	enemies         []*models.Ghost
+	backgroundSound *modules.InfiniteAudio
 }
 
 func (l *Level) parseLevel(file string, numEnemies int) error {
@@ -59,7 +61,12 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					constants.Clyde,
 				}
 				for i := 0; i < numEnemies; i++ {
-					ghost, err := models.InitGhost(col, row, float64(i)*constants.TimeBetweenSpawns, allGhosts[i%len(allGhosts)])
+					ghost, err := models.InitGhost(
+						col,
+						row,
+						float64(i)*constants.TimeBetweenSpawns+float64(i),
+						allGhosts[i%len(allGhosts)],
+					)
 					if err != nil {
 						return err
 					}
@@ -98,15 +105,28 @@ func (l *Level) Run() {
 	// wait := make(chan struct{})
 	// l.context.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
 	// <-wait
+	sirenSounds := []constants.SoundEffect{
+		constants.GhostSirenPhase1,
+		constants.GhostSirenPhase2,
+		constants.GhostSirenPhase3,
+		constants.GhostSirenPhase4,
+	}
 
-	l.context.SoundPlayer.PlayOnLoop(constants.GhostSiren)
+	l.backgroundSound = l.context.SoundPlayer.PlayOnLoop(sirenSounds[l.phase])
 	go l.player.Run(l.context)
 	for _, enemy := range l.enemies {
 		go enemy.Run(l.context)
 	}
 	for {
-		<-l.context.Msg
-		// TODO: switch case to detect what message was sent
+		select {
+		case newPhase := <-l.context.Msg.PhaseChange:
+			if newPhase > l.phase {
+				l.backgroundSound.Replace(sirenSounds[newPhase%len(sirenSounds)])
+				l.phase = newPhase
+			}
+		case <-l.context.Msg.EatFood:
+			// TODO: increment counter and check for end game
+		}
 	}
 }
 
@@ -126,9 +146,13 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 		return nil, errors.New(errMsg)
 	}
 	l := Level{
+		phase:   0,
 		enemies: make([]*models.Ghost, 0, numEnemies),
 		context: &contexts.GameContext{
-			Msg: make(chan constants.EventType),
+			Msg: &structures.MessageBroker{
+				EatFood:     make(chan struct{}),
+				PhaseChange: make(chan int),
+			},
 		},
 	}
 	soundPlayer, err := modules.InitSoundPlayer()

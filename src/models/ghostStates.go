@@ -185,7 +185,10 @@ func (c *Chase) Run() {
 	}
 	c.gameContext.MazeMutex.Unlock()
 	c.prevDirection = c.ghost.direction
-	if time.Now().Sub(c.createdAt).Seconds() > constants.ChaseModeDuration {
+	timer := time.Now().Sub(c.createdAt).Seconds()
+	if c.ghost.phase < constants.InfiniteChasePhase && timer > constants.ChaseModeDuration {
+		c.ghost.phase++
+		c.gameContext.Msg.PhaseChange <- c.ghost.phase
 		c.ghost.ChangeState(constants.Scatter)
 	}
 }
