@@ -2,6 +2,8 @@ package screens
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -19,7 +21,7 @@ type Level struct {
 	enemies []*models.Ghost
 }
 
-func (l *Level) parseLevel(file string) error {
+func (l *Level) parseLevel(file string, numEnemies int) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -50,14 +52,24 @@ func (l *Level) parseLevel(file string) error {
 				l.player = player
 				l.context.Maze.AddElement(row, col, player)
 			case 'G':
-				// TODO: Create specified number of enemies (randomize ghost types)
-				ghost, err := models.InitGhost(col, row, 0, constants.RedGhost)
-				if err != nil {
-					return err
+				allGhosts := []constants.GhostType{
+					constants.Blinky,
+					constants.Pinky,
+					constants.Inky,
+					constants.Clyde,
 				}
-				ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.context.Maze))
-				l.enemies = append(l.enemies, ghost)
-				l.context.Maze.AddElement(row, col, ghost)
+				for i := 0; i < numEnemies; i++ {
+					ghost, err := models.InitGhost(col, row, float64(i)*constants.TimeBetweenSpawns, allGhosts[i%len(allGhosts)])
+					if err != nil {
+						return err
+					}
+					ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.context.Maze))
+					l.enemies = append(l.enemies, ghost)
+				}
+				// Add to maze in reverse order so that red ghost will always be painted first
+				for i := len(l.enemies) - 1; i >= 0; i-- {
+					l.context.Maze.AddElement(row, col, l.enemies[i])
+				}
 			case '.', '@':
 				food, err := models.InitFood(elem == '@')
 				if err != nil {
@@ -105,10 +117,16 @@ func (l *Level) Draw(screen *ebiten.Image) {
 }
 
 // InitLevel given a valid level file
-func InitLevel(levelFile string) (*Level, error) {
-	// TODO: Init ghost array with capacity to hold all specified ghosts
+func InitLevel(levelFile string, numEnemies int) (*Level, error) {
+	if numEnemies <= 0 {
+		return nil, errors.New("At least one enemy must be spawned")
+	}
+	if numEnemies > constants.MaxGhostsAllowed {
+		errMsg := fmt.Sprintf("Cannot instantiate more than %d enemies", constants.MaxGhostsAllowed)
+		return nil, errors.New(errMsg)
+	}
 	l := Level{
-		enemies: make([]*models.Ghost, 0),
+		enemies: make([]*models.Ghost, 0, numEnemies),
 		context: &contexts.GameContext{
 			Msg: make(chan constants.EventType),
 		},
@@ -118,6 +136,6 @@ func InitLevel(levelFile string) (*Level, error) {
 		return nil, err
 	}
 	l.context.SoundPlayer = soundPlayer
-	err = l.parseLevel(levelFile)
+	err = l.parseLevel(levelFile, numEnemies)
 	return &l, err
 }

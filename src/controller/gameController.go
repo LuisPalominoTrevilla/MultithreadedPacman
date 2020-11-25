@@ -52,13 +52,13 @@ func (g *GameController) State() constants.GameState {
 }
 
 // InitGameController instantiaes the main game controller
-func InitGameController() (*GameController, error) {
+func InitGameController(nEnemies int) (*GameController, error) {
 	gameController := GameController{
 		state:   constants.InactiveState,
 		screens: make(map[constants.GameState]interfaces.Screen),
 	}
 
-	level, err := screens.InitLevel("assets/level1.txt")
+	level, err := screens.InitLevel("assets/level1.txt", nEnemies)
 	if err != nil {
 		return nil, err
 	}

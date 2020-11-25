@@ -37,7 +37,6 @@ func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement boo
 	toY := utils.Mod(from.Y()+direction.Y, m.rows)
 	destinationGroup := m.logicMap[toY][toX]
 	if delDestElement {
-		// TODO: Dispose of the sprite of the removed element
 		destinationGroup.RemoveTopElement()
 	}
 	destinationGroup.AddElement(elem)

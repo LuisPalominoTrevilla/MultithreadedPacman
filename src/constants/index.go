@@ -3,8 +3,10 @@ package constants
 // TileSize represents the size of the side of a square tile
 const (
 	TileSize            = 32
+	MaxGhostsAllowed    = 8
 	DefaultPacmanFPS    = 6
 	DefaultGhostFPS     = 6
+	TimeBetweenSpawns   = 3
 	ScatterModeDuration = 7
 	ChaseModeDuration   = 20
 )
@@ -53,15 +55,15 @@ var AudioFiles = map[SoundEffect][]string{
 // GhostType represents a type of ghost
 type GhostType string
 
-// RedGhost - The classic pacman red ghost
-// CyanGhost - The classic pacman cyan ghost
-// PinkGhost - The classic pacman pink ghost
-// OrangeGhost - The classic pacman orange ghost
+// Blinky - The classic pacman red ghost
+// Inky - The classic pacman cyan ghost
+// Pinky - The classic pacman pink ghost
+// Clyde - The classic pacman orange ghost
 const (
-	RedGhost    GhostType = "red"
-	CyanGhost   GhostType = "cyan"
-	PinkGhost   GhostType = "pink"
-	OrangeGhost GhostType = "orange"
+	Blinky GhostType = "red"
+	Inky   GhostType = "cyan"
+	Pinky  GhostType = "pink"
+	Clyde  GhostType = "orange"
 )
 
 // GhostState represents a ghost state

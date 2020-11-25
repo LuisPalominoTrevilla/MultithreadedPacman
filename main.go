@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	_ "image/png"
 	"log"
 
@@ -12,8 +13,10 @@ import (
 var gameController *controller.GameController
 
 func init() {
+	nEnemies := flag.Int("n", 1, "Number of enemies to go against")
+	flag.Parse()
 	var err error
-	gameController, err = controller.InitGameController()
+	gameController, err = controller.InitGameController(*nEnemies)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +44,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	// ebiten.SetScreenClearedEveryFrame(false)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
