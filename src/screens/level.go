@@ -131,7 +131,7 @@ func (l *Level) Run() {
 				l.backgroundSound.Replace(constants.PowerPellet, true)
 			}
 		case <-l.context.Msg.PowerPelletWoreOff:
-			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], false)
+			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], true)
 		}
 	}
 }
