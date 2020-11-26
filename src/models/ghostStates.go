@@ -100,7 +100,6 @@ func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 
 // Run main logic of state
 func (s *Scatter) Run() {
-	s.gameContext.MazeMutex.Lock()
 	if !s.recentlyChangedDirection {
 		s.ghost.attemptChangeDirection(nil)
 	}
@@ -115,7 +114,6 @@ func (s *Scatter) Run() {
 			s.ghost.advanceSprites()
 		}
 	}
-	s.gameContext.MazeMutex.Unlock()
 	s.prevDirection = s.ghost.direction
 	if time.Now().Sub(s.createdAt).Seconds() > constants.ScatterModeDuration {
 		s.ghost.ChangeState(constants.ChasePacman)
@@ -168,7 +166,6 @@ func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostStat
 
 // Run main logic of state
 func (c *Chase) Run() {
-	c.gameContext.MazeMutex.Lock()
 	if !c.recentlyChangedDirection {
 		c.ghost.attemptChangeDirection(c.gameContext.MainPlayer.GetPosition())
 	}
@@ -183,7 +180,6 @@ func (c *Chase) Run() {
 			c.ghost.advanceSprites()
 		}
 	}
-	c.gameContext.MazeMutex.Unlock()
 	c.prevDirection = c.ghost.direction
 	timer := time.Now().Sub(c.createdAt).Seconds()
 	if c.ghost.phase < constants.InfiniteChasePhase && timer > constants.ChaseModeDuration {

@@ -101,7 +101,9 @@ func (g *Ghost) Run(gameContext *contexts.GameContext) {
 
 	g.state = InitIdle(g, gameContext)
 	for {
+		gameContext.MazeMutex.Lock()
 		g.state.Run()
+		gameContext.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
 	}
 }
