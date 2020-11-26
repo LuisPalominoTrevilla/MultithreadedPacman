@@ -11,3 +11,10 @@ type GhostState interface {
 	Run()
 	GetSprite() *ebiten.Image
 }
+
+// PacmanState represents the player state
+type PacmanState interface {
+	ApplyTransition(event constants.StateEvent) PacmanState
+	Run()
+	GetSprite() *ebiten.Image
+}

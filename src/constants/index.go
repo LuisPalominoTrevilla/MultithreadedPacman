@@ -5,6 +5,7 @@ const (
 	TileSize            = 32
 	MaxGhostsAllowed    = 8
 	DefaultPacmanFPS    = 6
+	PowerPacmanFPS      = 8
 	DefaultGhostFPS     = 6
 	InfiniteChasePhase  = 3
 	TimeBetweenSpawns   = 3
@@ -20,16 +21,6 @@ type GameState int
 const (
 	InactiveState GameState = iota
 	PlayState
-)
-
-// StateEvent represents a type of event
-type StateEvent int
-
-// Scatter - Whenever a ghost starts scattering
-// ChasePacman - Whenever a ghost starts chasing pacman
-const (
-	Scatter StateEvent = iota
-	ChasePacman
 )
 
 // SoundEffect represents a type of sound effect
@@ -71,6 +62,18 @@ const (
 	Clyde  GhostType = "orange"
 )
 
+// StateEvent represents a type of event used to transition between states
+type StateEvent int
+
+// Scatter - Whenever a ghost starts scattering
+// ChasePacman - Whenever a ghost starts chasing pacman
+// PowerPelletEaten - Whenever pacman eats a power pellet
+const (
+	Scatter StateEvent = iota
+	ChasePacman
+	PowerPelletEaten
+)
+
 // GhostState represents a ghost state
 type GhostState int
 
@@ -81,6 +84,16 @@ const (
 	IdleState GhostState = iota
 	ScatterState
 	ChaseState
+)
+
+// PacmanState represents a ghost state
+type PacmanState int
+
+// WalkingState - Normal pacman behavior
+// PowerState - Pacman behavior with power pellet
+const (
+	WalkingState PacmanState = iota
+	PowerState
 )
 
 // Direction expresses a direction

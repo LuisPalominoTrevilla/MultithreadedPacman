@@ -14,6 +14,7 @@ import (
 
 // Pacman represents the player
 type Pacman struct {
+	state             interfaces.PacmanState
 	position          interfaces.Location
 	speed             int
 	keyDirection      constants.Direction
@@ -48,46 +49,17 @@ func (p *Pacman) keyListener() {
 	}
 }
 
-// Refactored method to handle collisions.
-// Retries once if collision is a wall to stop users from switching to a colliding direction
-func (p *Pacman) handleCollisions(
-	prevDirection constants.Direction,
-	gameContext *contexts.GameContext,
-) {
-	target := p.collisionDetector.DetectCollision()
-	switch target.(type) {
-	case *Wall:
-		if p.direction != prevDirection {
-			p.direction = prevDirection
-			p.handleCollisions(prevDirection, gameContext)
-		}
-	case *Pellet:
-		// TODO: increment score, set appropriate state if pellet was power pellet
-		gameContext.Maze.MoveElement(p, true)
-		p.sprites.Advance()
-		gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		gameContext.Msg.EatPellet <- struct{}{}
-	default:
-		gameContext.Maze.MoveElement(p, false)
-		p.sprites.Advance()
-	}
-}
-
 // Run the behavior of the player
 func (p *Pacman) Run(gameContext *contexts.GameContext) {
 	if p.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
 	}
 
-	prevDirection := p.direction
+	p.state = InitWalking(p, gameContext)
 	go p.keyListener()
 	for {
 		gameContext.MazeMutex.Lock()
-		if p.keyDirection != constants.DirStatic {
-			p.direction = p.keyDirection
-		}
-		p.handleCollisions(prevDirection, gameContext)
-		prevDirection = p.direction
+		p.state.Run()
 		gameContext.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
@@ -100,7 +72,10 @@ func (p *Pacman) Draw(screen *ebiten.Image, x, y int) {
 
 // GetSprite of the element
 func (p *Pacman) GetSprite() *ebiten.Image {
-	return p.sprites.GetCurrentFrame()
+	if p.state == nil {
+		return p.sprites.GetCurrentFrame()
+	}
+	return p.state.GetSprite()
 }
 
 // GetDirection of the element

@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func getStateInstance(
+func getGhostStateInstance(
 	state constants.GhostState,
 	ghost *Ghost,
 	ctx *contexts.GameContext,
@@ -45,7 +45,7 @@ func (i *Idle) ApplyTransition(event constants.StateEvent) interfaces.GhostState
 		return i
 	}
 
-	return getStateInstance(state, i.ghost, i.gameContext)
+	return getGhostStateInstance(state, i.ghost, i.gameContext)
 }
 
 // Run main logic of state
@@ -95,7 +95,7 @@ func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 		return s
 	}
 
-	return getStateInstance(state, s.ghost, s.gameContext)
+	return getGhostStateInstance(state, s.ghost, s.gameContext)
 }
 
 // Run main logic of state
@@ -161,7 +161,7 @@ func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostStat
 		return c
 	}
 
-	return getStateInstance(state, c.ghost, c.gameContext)
+	return getGhostStateInstance(state, c.ghost, c.gameContext)
 }
 
 // Run main logic of state
