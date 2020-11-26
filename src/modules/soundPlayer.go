@@ -27,7 +27,10 @@ func (p *InfiniteAudio) Stop() {
 }
 
 // Replace current audio playing on loop with a different one
-func (p *InfiniteAudio) Replace(effect constants.SoundEffect) {
+func (p *InfiniteAudio) Replace(effect constants.SoundEffect, instant bool) {
+	if instant && p.currentPlayer != nil {
+		p.currentPlayer.Pause()
+	}
 	p.queued = true
 	p.nextSound = effect
 	p.keepPlaying = false

@@ -121,11 +121,17 @@ func (l *Level) Run() {
 		select {
 		case newPhase := <-l.context.Msg.PhaseChange:
 			if newPhase > l.phase {
-				l.backgroundSound.Replace(sirenSounds[newPhase%len(sirenSounds)])
+				l.backgroundSound.Replace(sirenSounds[newPhase%len(sirenSounds)], false)
 				l.phase = newPhase
 			}
-		case <-l.context.Msg.EatPellet:
+		case isPowerful := <-l.context.Msg.EatPellet:
 			// TODO: increment counter and check for end game
+			if isPowerful {
+				// TODO: Trigger pellet state in all ghosts
+				l.backgroundSound.Replace(constants.PowerPellet, true)
+			}
+		case <-l.context.Msg.PowerPelletWoreOff:
+			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], false)
 		}
 	}
 }
@@ -150,8 +156,9 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 		enemies: make([]*models.Ghost, 0, numEnemies),
 		context: &contexts.GameContext{
 			Msg: &structures.MessageBroker{
-				EatPellet:   make(chan struct{}),
-				PhaseChange: make(chan int),
+				EatPellet:          make(chan bool),
+				PhaseChange:        make(chan int),
+				PowerPelletWoreOff: make(chan struct{}),
 			},
 		},
 	}

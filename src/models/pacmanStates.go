@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
@@ -15,15 +17,15 @@ func getPacmanStateInstance(
 	switch state {
 	case constants.WalkingState:
 		return InitWalking(pacman, ctx)
-	// case constants.PowerState:
-	// return InitPower(pacman, ctx)
+	case constants.PowerState:
+		return InitPower(pacman, ctx)
 	default:
 		return nil
 	}
 }
 
 //----------------------------------------------------------------------------//
-//--------------------------------- WALKING-----------------------------------//
+//----------------------------------WALKING-----------------------------------//
 //----------------------------------------------------------------------------//
 
 // Walking state of the player
@@ -35,57 +37,140 @@ type Walking struct {
 }
 
 // ApplyTransition given an event
-func (i *Walking) ApplyTransition(event constants.StateEvent) interfaces.PacmanState {
-	state, found := i.transitions[event]
+func (w *Walking) ApplyTransition(event constants.StateEvent) interfaces.PacmanState {
+	state, found := w.transitions[event]
 	if !found {
-		return i
+		return w
 	}
 
-	return getPacmanStateInstance(state, i.pacman, i.gameContext)
+	return getPacmanStateInstance(state, w.pacman, w.gameContext)
 }
 
-func (i *Walking) handleCollisions() {
-	target := i.pacman.collisionDetector.DetectCollision()
-	switch target.(type) {
+func (w *Walking) handleCollisions() {
+	target := w.pacman.collisionDetector.DetectCollision()
+	switch obj := target.(type) {
 	case *Wall:
-		if i.pacman.direction != i.prevDirection {
-			i.pacman.direction = i.prevDirection
-			i.handleCollisions()
+		if w.pacman.direction != w.prevDirection {
+			w.pacman.direction = w.prevDirection
+			w.handleCollisions()
 		}
 	case *Pellet:
-		// TODO: increment score, set appropriate state if pellet was power pellet
-		i.gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		i.gameContext.Maze.MoveElement(i.pacman, true)
-		i.pacman.sprites.Advance()
-		i.gameContext.Msg.EatPellet <- struct{}{}
+		w.gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
+		w.gameContext.Maze.MoveElement(w.pacman, true)
+		w.pacman.sprites.Advance()
+		w.gameContext.Msg.EatPellet <- obj.isPowerful
+		if obj.isPowerful {
+			w.pacman.ChangeState(constants.PowerPelletEaten)
+		}
 	default:
-		i.gameContext.Maze.MoveElement(i.pacman, false)
-		i.pacman.sprites.Advance()
+		w.gameContext.Maze.MoveElement(w.pacman, false)
+		w.pacman.sprites.Advance()
 	}
 }
 
 // Run main logic of state
-func (i *Walking) Run() {
-	if i.pacman.keyDirection != constants.DirStatic {
-		i.pacman.direction = i.pacman.keyDirection
+func (w *Walking) Run() {
+	if w.pacman.keyDirection != constants.DirStatic {
+		w.pacman.direction = w.pacman.keyDirection
 	}
-	i.handleCollisions()
-	i.prevDirection = i.pacman.direction
+	w.handleCollisions()
+	w.prevDirection = w.pacman.direction
 }
 
 // GetSprite corresponding to state
-func (i *Walking) GetSprite() *ebiten.Image {
-	return i.pacman.sprites.GetCurrentFrame()
+func (w *Walking) GetSprite() *ebiten.Image {
+	return w.pacman.sprites.GetCurrentFrame()
 }
 
 // InitWalking state instance
 func InitWalking(pacman *Pacman, ctx *contexts.GameContext) *Walking {
+	pacman.speed = constants.DefaultPacmanFPS
 	walking := Walking{
 		pacman:        pacman,
 		gameContext:   ctx,
 		transitions:   make(map[constants.StateEvent]constants.PacmanState),
 		prevDirection: pacman.direction,
 	}
-	// walking.transitions[constants.Scatter] = constants
+	walking.transitions[constants.PowerPelletEaten] = constants.PowerState
 	return &walking
+}
+
+//----------------------------------------------------------------------------//
+//-----------------------------------POWER------------------------------------//
+//----------------------------------------------------------------------------//
+
+// Power state of the player
+type Power struct {
+	pacman        *Pacman
+	gameContext   *contexts.GameContext
+	transitions   map[constants.StateEvent]constants.PacmanState
+	createdAt     time.Time
+	prevDirection constants.Direction
+}
+
+// ApplyTransition given an event
+func (p *Power) ApplyTransition(event constants.StateEvent) interfaces.PacmanState {
+	state, found := p.transitions[event]
+	if !found {
+		return p
+	}
+
+	return getPacmanStateInstance(state, p.pacman, p.gameContext)
+}
+
+func (p *Power) handleCollisions() {
+	target := p.pacman.collisionDetector.DetectCollision()
+	switch obj := target.(type) {
+	case *Wall:
+		if p.pacman.direction != p.prevDirection {
+			p.pacman.direction = p.prevDirection
+			p.handleCollisions()
+		}
+	case *Pellet:
+		// TODO: increment score, set appropriate state if pellet was power pellet
+		p.gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
+		p.gameContext.Maze.MoveElement(p.pacman, true)
+		p.pacman.sprites.Advance()
+		p.gameContext.Msg.EatPellet <- obj.isPowerful
+		if obj.isPowerful {
+			p.pacman.ChangeState(constants.PowerPelletEaten)
+		}
+	default:
+		p.gameContext.Maze.MoveElement(p.pacman, false)
+		p.pacman.sprites.Advance()
+	}
+}
+
+// Run main logic of state
+func (p *Power) Run() {
+	if p.pacman.keyDirection != constants.DirStatic {
+		p.pacman.direction = p.pacman.keyDirection
+	}
+	p.handleCollisions()
+	p.prevDirection = p.pacman.direction
+	timer := time.Now().Sub(p.createdAt).Seconds()
+	if timer > constants.PowerPelletDuration {
+		p.gameContext.Msg.PowerPelletWoreOff <- struct{}{}
+		p.pacman.ChangeState(constants.PowerPelletWearOff)
+	}
+}
+
+// GetSprite corresponding to state
+func (p *Power) GetSprite() *ebiten.Image {
+	return p.pacman.sprites.GetCurrentFrame()
+}
+
+// InitPower state instance
+func InitPower(pacman *Pacman, ctx *contexts.GameContext) *Power {
+	pacman.speed = constants.PowerPacmanFPS
+	power := Power{
+		pacman:        pacman,
+		gameContext:   ctx,
+		transitions:   make(map[constants.StateEvent]constants.PacmanState),
+		createdAt:     time.Now(),
+		prevDirection: pacman.direction,
+	}
+	power.transitions[constants.PowerPelletEaten] = constants.PowerState
+	power.transitions[constants.PowerPelletWearOff] = constants.WalkingState
+	return &power
 }

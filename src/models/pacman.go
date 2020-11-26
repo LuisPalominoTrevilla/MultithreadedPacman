@@ -49,6 +49,14 @@ func (p *Pacman) keyListener() {
 	}
 }
 
+// ChangeState given an event
+func (p *Pacman) ChangeState(event constants.StateEvent) {
+	newState := p.state.ApplyTransition(event)
+	if newState != nil {
+		p.state = newState
+	}
+}
+
 // Run the behavior of the player
 func (p *Pacman) Run(gameContext *contexts.GameContext) {
 	if p.collisionDetector == nil {

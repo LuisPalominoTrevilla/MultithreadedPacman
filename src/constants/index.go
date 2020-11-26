@@ -10,6 +10,7 @@ const (
 	InfiniteChasePhase  = 3
 	TimeBetweenSpawns   = 3
 	ScatterModeDuration = 7
+	PowerPelletDuration = 7
 	ChaseModeDuration   = 20
 )
 
@@ -36,6 +37,7 @@ const (
 	GhostSirenPhase2
 	GhostSirenPhase3
 	GhostSirenPhase4
+	PowerPellet
 )
 
 // AudioFiles for each sound effect
@@ -46,6 +48,7 @@ var AudioFiles = map[SoundEffect][]string{
 	GhostSirenPhase2: {"assets/audio/siren_2.wav"},
 	GhostSirenPhase3: {"assets/audio/siren_3.wav"},
 	GhostSirenPhase4: {"assets/audio/siren_4.wav"},
+	PowerPellet:      {"assets/audio/power_pellet.wav"},
 }
 
 // GhostType represents a type of ghost
@@ -72,6 +75,7 @@ const (
 	Scatter StateEvent = iota
 	ChasePacman
 	PowerPelletEaten
+	PowerPelletWearOff
 )
 
 // GhostState represents a ghost state
