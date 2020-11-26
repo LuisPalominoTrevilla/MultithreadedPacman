@@ -62,6 +62,10 @@ func (w *Walking) handleCollisions() {
 		if obj.isPowerful {
 			w.pacman.ChangeState(constants.PowerPelletEaten)
 		}
+	case *Ghost:
+		obj.AttemptEatPacman(w.pacman)
+		w.gameContext.Maze.MoveElement(w.pacman, false)
+		w.pacman.sprites.Advance()
 	default:
 		w.gameContext.Maze.MoveElement(w.pacman, false)
 		w.pacman.sprites.Advance()
@@ -135,6 +139,10 @@ func (p *Power) handleCollisions() {
 		if obj.isPowerful {
 			p.pacman.ChangeState(constants.PowerPelletEaten)
 		}
+	case *Ghost:
+		obj.AttemptEatPacman(p.pacman)
+		p.gameContext.Maze.MoveElement(p.pacman, false)
+		p.pacman.sprites.Advance()
 	default:
 		p.gameContext.Maze.MoveElement(p.pacman, false)
 		p.pacman.sprites.Advance()

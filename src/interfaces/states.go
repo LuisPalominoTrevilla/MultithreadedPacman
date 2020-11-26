@@ -8,6 +8,7 @@ import (
 // GhostState represents a ghost state
 type GhostState interface {
 	ApplyTransition(event constants.StateEvent) GhostState
+	AttemptEatPacman(obj MovableGameObject)
 	Run()
 	GetSprite() *ebiten.Image
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -55,6 +56,11 @@ func (p *Pacman) ChangeState(event constants.StateEvent) {
 	if newState != nil {
 		p.state = newState
 	}
+}
+
+// EatGhost and send it back to hell
+func (p *Pacman) EatGhost(g *Ghost) {
+	fmt.Println("Eating ghost")
 }
 
 // Run the behavior of the player

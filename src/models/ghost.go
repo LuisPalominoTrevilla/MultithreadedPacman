@@ -54,14 +54,6 @@ func (g *Ghost) orientedSprite() *ebiten.Image {
 	}
 }
 
-// ChangeState given an event
-func (g *Ghost) ChangeState(event constants.StateEvent) {
-	newState := g.state.ApplyTransition(event)
-	if newState != nil {
-		g.state = newState
-	}
-}
-
 func (g *Ghost) attemptChangeDirection(target interfaces.Location, runAway, blockReverse bool) {
 	viableTiles := g.collisionDetector.ViableTiles(blockReverse)
 	options := len(viableTiles)
@@ -104,6 +96,19 @@ func (g *Ghost) attemptChangeDirection(target interfaces.Location, runAway, bloc
 		selected = directions[rand.Intn(len(directions))]
 	}
 	g.direction = selected
+}
+
+// ChangeState given an event
+func (g *Ghost) ChangeState(event constants.StateEvent) {
+	newState := g.state.ApplyTransition(event)
+	if newState != nil {
+		g.state = newState
+	}
+}
+
+// AttemptEatPacman given the current ghost state
+func (g *Ghost) AttemptEatPacman(obj interfaces.MovableGameObject) {
+	g.state.AttemptEatPacman(obj)
 }
 
 // Run the behavior of the ghost

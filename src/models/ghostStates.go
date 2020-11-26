@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -52,6 +53,9 @@ func (i *Idle) ApplyTransition(event constants.StateEvent) interfaces.GhostState
 	return getGhostStateInstance(state, i.ghost, i.gameContext)
 }
 
+// AttemptEatPacman given the current state
+func (i *Idle) AttemptEatPacman(obj interfaces.MovableGameObject) {}
+
 // Run main logic of state
 func (i *Idle) Run() {
 	i.ghost.advanceSprites()
@@ -101,6 +105,17 @@ func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 	return getGhostStateInstance(state, s.ghost, s.gameContext)
 }
 
+// AttemptEatPacman given the current state
+func (s *Scatter) AttemptEatPacman(obj interfaces.MovableGameObject) {
+	_, ok := obj.(*Pacman)
+	if !ok {
+		return
+	}
+
+	fmt.Println("Pacman dead")
+	// TODO: Change pacman state to eaten
+}
+
 // Run main logic of state
 func (s *Scatter) Run() {
 	if !s.recentlyChangedDirection {
@@ -109,9 +124,13 @@ func (s *Scatter) Run() {
 	s.recentlyChangedDirection = s.ghost.direction != s.prevDirection
 	if !s.recentlyChangedDirection {
 		target := s.ghost.collisionDetector.DetectCollision()
-		switch target.(type) {
+		switch obj := target.(type) {
 		case *Wall:
 			s.ghost.direction = pickRandomDirection()
+		case *Pacman:
+			s.AttemptEatPacman(obj)
+			s.gameContext.Maze.MoveElement(s.ghost, false)
+			s.ghost.advanceSprites()
 		default:
 			s.gameContext.Maze.MoveElement(s.ghost, false)
 			s.ghost.advanceSprites()
@@ -168,6 +187,17 @@ func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostStat
 	return getGhostStateInstance(state, c.ghost, c.gameContext)
 }
 
+// AttemptEatPacman given the current state
+func (c *Chase) AttemptEatPacman(obj interfaces.MovableGameObject) {
+	_, ok := obj.(*Pacman)
+	if !ok {
+		return
+	}
+
+	fmt.Println("Pacman dead")
+	// TODO: Change pacman state to eaten
+}
+
 // Run main logic of state
 func (c *Chase) Run() {
 	if !c.recentlyChangedDirection {
@@ -176,9 +206,13 @@ func (c *Chase) Run() {
 	c.recentlyChangedDirection = c.ghost.direction != c.prevDirection
 	if !c.recentlyChangedDirection {
 		target := c.ghost.collisionDetector.DetectCollision()
-		switch target.(type) {
+		switch obj := target.(type) {
 		case *Wall:
 			c.ghost.direction = pickRandomDirection()
+		case *Pacman:
+			c.AttemptEatPacman(obj)
+			c.gameContext.Maze.MoveElement(c.ghost, false)
+			c.ghost.advanceSprites()
 		default:
 			c.gameContext.Maze.MoveElement(c.ghost, false)
 			c.ghost.advanceSprites()
@@ -239,6 +273,15 @@ func (f *Fleeing) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 	return getGhostStateInstance(state, f.ghost, f.gameContext)
 }
 
+// AttemptEatPacman given the current state
+func (f *Fleeing) AttemptEatPacman(obj interfaces.MovableGameObject) {
+	pacman, ok := obj.(*Pacman)
+	if !ok {
+		return
+	}
+	pacman.EatGhost(f.ghost)
+}
+
 // Run main logic of state
 func (f *Fleeing) Run() {
 	if !f.recentlyChangedDirection {
@@ -248,9 +291,13 @@ func (f *Fleeing) Run() {
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
 	if !f.recentlyChangedDirection {
 		target := f.ghost.collisionDetector.DetectCollision()
-		switch target.(type) {
+		switch obj := target.(type) {
 		case *Wall:
 			f.ghost.direction = pickRandomDirection()
+		case *Pacman:
+			f.AttemptEatPacman(obj)
+			f.gameContext.Maze.MoveElement(f.ghost, false)
+			f.ghost.advanceSprites()
 		default:
 			f.gameContext.Maze.MoveElement(f.ghost, false)
 			f.ghost.advanceSprites()
@@ -309,6 +356,15 @@ func (f *Flickering) ApplyTransition(event constants.StateEvent) interfaces.Ghos
 	return getGhostStateInstance(state, f.ghost, f.gameContext)
 }
 
+// AttemptEatPacman given the current state
+func (f *Flickering) AttemptEatPacman(obj interfaces.MovableGameObject) {
+	pacman, ok := obj.(*Pacman)
+	if !ok {
+		return
+	}
+	pacman.EatGhost(f.ghost)
+}
+
 // Run main logic of state
 func (f *Flickering) Run() {
 	if !f.recentlyChangedDirection {
@@ -317,9 +373,13 @@ func (f *Flickering) Run() {
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
 	if !f.recentlyChangedDirection {
 		target := f.ghost.collisionDetector.DetectCollision()
-		switch target.(type) {
+		switch obj := target.(type) {
 		case *Wall:
 			f.ghost.direction = pickRandomDirection()
+		case *Pacman:
+			f.AttemptEatPacman(obj)
+			f.gameContext.Maze.MoveElement(f.ghost, false)
+			f.ghost.advanceSprites()
 		default:
 			f.gameContext.Maze.MoveElement(f.ghost, false)
 			f.ghost.advanceSprites()
