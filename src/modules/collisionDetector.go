@@ -14,12 +14,12 @@ type CollisionDetector struct {
 }
 
 // ViableTiles by direction to take from the current movable object's position
-func (c *CollisionDetector) ViableTiles() map[constants.Direction]*structures.Position {
+func (c *CollisionDetector) ViableTiles(blockReverse bool) map[constants.Direction]*structures.Position {
 	from := c.source.GetPosition()
 	cols, rows := c.maze.Dimensions()
 	viableTiles := make(map[constants.Direction]*structures.Position)
 	for _, direction := range constants.PossibleDirections {
-		if direction.IsOpposite(c.source.GetDirection()) {
+		if blockReverse && direction.IsOpposite(c.source.GetDirection()) {
 			continue
 		}
 		toX := utils.Mod(from.X()+direction.X, cols)

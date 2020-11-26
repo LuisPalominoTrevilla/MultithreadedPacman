@@ -62,14 +62,20 @@ func (g *Ghost) ChangeState(event constants.StateEvent) {
 	}
 }
 
-func (g *Ghost) attemptChangeDirection(target interfaces.Location) {
-	viableTiles := g.collisionDetector.ViableTiles()
+func (g *Ghost) attemptChangeDirection(target interfaces.Location, runAway, blockReverse bool) {
+	viableTiles := g.collisionDetector.ViableTiles(blockReverse)
 	options := len(viableTiles)
 	if options == 0 {
 		return
 	}
 	var selected constants.Direction
-	shortestDistance := math.MaxFloat64
+	var bestDistance float64
+	if runAway {
+		bestDistance = math.MinInt64
+	} else {
+		bestDistance = math.MaxInt64
+	}
+
 	directions := make([]constants.Direction, 0, len(viableTiles))
 	for direction, position := range viableTiles {
 		if options == 1 && direction == g.direction {
@@ -80,8 +86,15 @@ func (g *Ghost) attemptChangeDirection(target interfaces.Location) {
 			continue
 		}
 		currentDistance := position.DistanceTo(target)
-		if currentDistance < shortestDistance {
-			shortestDistance = currentDistance
+		var meetsDistanceCriteria bool
+		if runAway {
+			meetsDistanceCriteria = currentDistance > bestDistance
+		} else {
+			meetsDistanceCriteria = currentDistance < bestDistance
+		}
+
+		if meetsDistanceCriteria {
+			bestDistance = currentDistance
 			selected = direction
 		}
 	}
@@ -161,11 +174,15 @@ func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (
 		speed:         constants.DefaultGhostFPS,
 		sprites:       make(map[string]*structures.SpriteSequence),
 	}
-	categories := []string{"left", "right", "down", "up"}
+	categories := []string{"left", "right", "down", "up", "panic", "flicker"}
 	for _, category := range categories {
+		gType := string(ghostType)
+		if category == "panic" || category == "flicker" {
+			gType = ""
+		}
 		sprites := []string{
-			"assets/ghost/" + string(ghostType) + "/ghost-" + category + "-1.png",
-			"assets/ghost/" + string(ghostType) + "/ghost-" + category + "-2.png",
+			"assets/ghost/" + gType + "/ghost-" + category + "-1.png",
+			"assets/ghost/" + gType + "/ghost-" + category + "-2.png",
 		}
 		seq, err := structures.InitSpriteSequence(sprites)
 		if err != nil {

@@ -2,16 +2,18 @@ package constants
 
 // TileSize represents the size of the side of a square tile
 const (
-	TileSize            = 32
-	MaxGhostsAllowed    = 8
-	DefaultPacmanFPS    = 6
-	PowerPacmanFPS      = 8
-	DefaultGhostFPS     = 6
-	InfiniteChasePhase  = 3
-	TimeBetweenSpawns   = 3
-	ScatterModeDuration = 7
-	PowerPelletDuration = 7
-	ChaseModeDuration   = 20
+	TileSize                = 32
+	MaxGhostsAllowed        = 8
+	DefaultPacmanFPS        = 6
+	PowerPacmanFPS          = 9
+	DefaultGhostFPS         = 6
+	FleeingGhostFPS         = 5
+	InfiniteChasePhase      = 3
+	TimeBetweenSpawns       = 3
+	ScatterModeDuration     = 7
+	ChaseModeDuration       = 2
+	FlickeringStateDuration = 2
+	PowerPelletDuration     = 7
 )
 
 // GameState represents the game state
@@ -69,13 +71,16 @@ const (
 type StateEvent int
 
 // Scatter - Whenever a ghost starts scattering
-// ChasePacman - Whenever a ghost starts chasing pacman
-// PowerPelletEaten - Whenever pacman eats a power pellet
+// ChasePacman - Whenever a ghost starts chasing PacMan
+// PowerPelletEaten - Whenever PacMan eats a power pellet
+// PowerPelletWearOff - Whenever PacMan's power pellet wears off
+// StartFlickering - A ghost will get imune to the pellet soon
 const (
 	Scatter StateEvent = iota
 	ChasePacman
 	PowerPelletEaten
 	PowerPelletWearOff
+	StartFlickering
 )
 
 // GhostState represents a ghost state
@@ -83,11 +88,15 @@ type GhostState int
 
 // IdleState - Initial ghost value
 // ScatterState - Normal ghost behavior
-// ChaseState - Behavior to chase pacman
+// ChaseState - Behavior to chase PacMan
+// FleeingState - Fleeing PacMan
+// FlickeringState - Still fleeing PacMan but about to stop
 const (
 	IdleState GhostState = iota
 	ScatterState
 	ChaseState
+	FleeingState
+	FlickeringState
 )
 
 // PacmanState represents a ghost state

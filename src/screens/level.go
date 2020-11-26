@@ -127,8 +127,10 @@ func (l *Level) Run() {
 		case isPowerful := <-l.context.Msg.EatPellet:
 			// TODO: increment counter and check for end game
 			if isPowerful {
-				// TODO: Trigger pellet state in all ghosts
 				l.backgroundSound.Replace(constants.PowerPellet, true)
+				for _, enemy := range l.enemies {
+					enemy.ChangeState(constants.PowerPelletEaten)
+				}
 			}
 		case <-l.context.Msg.PowerPelletWoreOff:
 			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], true)
