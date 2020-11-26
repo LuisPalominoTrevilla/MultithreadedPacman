@@ -5,7 +5,7 @@ const (
 	TileSize                = 32
 	MaxGhostsAllowed        = 8
 	DefaultPacmanFPS        = 6
-	PowerPacmanFPS          = 9
+	PowerPacmanFPS          = 8
 	DefaultGhostFPS         = 6
 	FleeingGhostFPS         = 5
 	InfiniteChasePhase      = 3
