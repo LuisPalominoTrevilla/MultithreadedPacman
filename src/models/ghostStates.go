@@ -129,15 +129,19 @@ func (s *Scatter) Run() {
 	}
 	s.recentlyChangedDirection = s.ghost.direction != s.prevDirection
 	if !s.recentlyChangedDirection {
-		target := s.ghost.collisionDetector.DetectCollision()
-		switch obj := target.(type) {
-		case *Wall:
-			s.ghost.direction = pickRandomDirection()
-		case *Pacman:
-			s.AttemptEatPacman(obj)
-			s.ctx.Maze.MoveElement(s.ghost)
-			s.ghost.advanceSprites()
-		default:
+		shouldMove := true
+		targets := s.ghost.collisionDetector.DetectCollision()
+		for _, target := range targets {
+			switch obj := target.(type) {
+			case *Wall:
+				s.ghost.direction = pickRandomDirection()
+				shouldMove = false
+			case *Pacman:
+				s.AttemptEatPacman(obj)
+			}
+		}
+
+		if shouldMove {
 			s.ctx.Maze.MoveElement(s.ghost)
 			s.ghost.advanceSprites()
 		}
@@ -213,15 +217,19 @@ func (c *Chase) Run() {
 	}
 	c.recentlyChangedDirection = c.ghost.direction != c.prevDirection
 	if !c.recentlyChangedDirection {
-		target := c.ghost.collisionDetector.DetectCollision()
-		switch obj := target.(type) {
-		case *Wall:
-			c.ghost.direction = pickRandomDirection()
-		case *Pacman:
-			c.AttemptEatPacman(obj)
-			c.ctx.Maze.MoveElement(c.ghost)
-			c.ghost.advanceSprites()
-		default:
+		shouldMove := true
+		targets := c.ghost.collisionDetector.DetectCollision()
+		for _, target := range targets {
+			switch obj := target.(type) {
+			case *Wall:
+				c.ghost.direction = pickRandomDirection()
+				shouldMove = false
+			case *Pacman:
+				c.AttemptEatPacman(obj)
+			}
+		}
+
+		if shouldMove {
 			c.ctx.Maze.MoveElement(c.ghost)
 			c.ghost.advanceSprites()
 		}
@@ -300,15 +308,19 @@ func (f *Fleeing) Run() {
 	}
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
 	if !f.recentlyChangedDirection {
-		target := f.ghost.collisionDetector.DetectCollision()
-		switch obj := target.(type) {
-		case *Wall:
-			f.ghost.direction = pickRandomDirection()
-		case *Pacman:
-			f.AttemptEatPacman(obj)
-			f.ctx.Maze.MoveElement(f.ghost)
-			f.ghost.advanceSprites()
-		default:
+		shouldMove := true
+		targets := f.ghost.collisionDetector.DetectCollision()
+		for _, target := range targets {
+			switch obj := target.(type) {
+			case *Wall:
+				f.ghost.direction = pickRandomDirection()
+				shouldMove = false
+			case *Pacman:
+				f.AttemptEatPacman(obj)
+			}
+		}
+
+		if shouldMove {
 			f.ctx.Maze.MoveElement(f.ghost)
 			f.ghost.advanceSprites()
 		}
@@ -385,15 +397,19 @@ func (f *Flickering) Run() {
 	}
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
 	if !f.recentlyChangedDirection {
-		target := f.ghost.collisionDetector.DetectCollision()
-		switch obj := target.(type) {
-		case *Wall:
-			f.ghost.direction = pickRandomDirection()
-		case *Pacman:
-			f.AttemptEatPacman(obj)
-			f.ctx.Maze.MoveElement(f.ghost)
-			f.ghost.advanceSprites()
-		default:
+		shouldMove := true
+		targets := f.ghost.collisionDetector.DetectCollision()
+		for _, target := range targets {
+			switch obj := target.(type) {
+			case *Wall:
+				f.ghost.direction = pickRandomDirection()
+				shouldMove = false
+			case *Pacman:
+				f.AttemptEatPacman(obj)
+			}
+		}
+
+		if shouldMove {
 			f.ctx.Maze.MoveElement(f.ghost)
 			f.ghost.advanceSprites()
 		}
@@ -460,15 +476,17 @@ func (e *Eaten) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 // Run main logic of state
 func (e *Eaten) Run() {
 	e.ghost.turnTowards(e.ctx.GhostBase, false, true)
-	target := e.ghost.collisionDetector.DetectCollision()
-	switch obj := target.(type) {
-	case *Wall:
-		e.ghost.direction = pickRandomDirection()
-	case *Pacman:
-		e.AttemptEatPacman(obj)
-		e.ctx.Maze.MoveElement(e.ghost)
-		e.ghost.advanceSprites()
-	default:
+	shouldMove := true
+	targets := e.ghost.collisionDetector.DetectCollision()
+	for _, target := range targets {
+		switch target.(type) {
+		case *Wall:
+			e.ghost.direction = pickRandomDirection()
+			shouldMove = false
+		}
+	}
+
+	if shouldMove {
 		e.ctx.Maze.MoveElement(e.ghost)
 		e.ghost.advanceSprites()
 	}

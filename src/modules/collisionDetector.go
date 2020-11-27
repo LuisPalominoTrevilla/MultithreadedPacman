@@ -24,34 +24,35 @@ func (c *CollisionDetector) ViableTiles(blockReverse bool) map[constants.Directi
 		}
 		toX := utils.Mod(from.X()+direction.X, cols)
 		toY := utils.Mod(from.Y()+direction.Y, rows)
-		elementsAtDestination := c.maze.ElementsAt(toX, toY)
-		if elementsAtDestination == nil {
+		targets := c.maze.ElementsAt(toX, toY)
+		if targets == nil {
 			continue
 		}
-		target := elementsAtDestination.ElementOnTop()
-		if target != nil && target.IsUnmovable() {
-			continue
+
+		isViable := true
+		for _, target := range targets {
+			if target.IsUnmovable() {
+				isViable = false
+				break
+			}
 		}
-		viableTiles[direction] = structures.InitPosition(toX, toY)
+
+		if isViable {
+			viableTiles[direction] = structures.InitPosition(toX, toY)
+		}
 	}
 
 	return viableTiles
 }
 
 // DetectCollision given the direction of the object
-func (c *CollisionDetector) DetectCollision() interfaces.GameObject {
+func (c *CollisionDetector) DetectCollision() []interfaces.GameObject {
 	from := c.source.GetPosition()
 	direction := c.source.GetDirection()
 	cols, rows := c.maze.Dimensions()
 	toX := utils.Mod(from.X()+direction.X, cols)
 	toY := utils.Mod(from.Y()+direction.Y, rows)
-	elementsAtDestination := c.maze.ElementsAt(toX, toY)
-	if elementsAtDestination == nil {
-		return nil
-	}
-
-	target := elementsAtDestination.ElementOnTop()
-	return target
+	return c.maze.ElementsAt(toX, toY)
 }
 
 // InitCollisionDetector instantiates a collision detector for a source

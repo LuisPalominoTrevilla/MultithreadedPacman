@@ -47,30 +47,32 @@ func (w *Walking) ApplyTransition(event constants.StateEvent) interfaces.PacmanS
 }
 
 func (w *Walking) handleCollisions() {
-	target := w.pacman.collisionDetector.DetectCollision()
-	switch obj := target.(type) {
-	case *Wall:
-		if w.pacman.direction != w.prevDirection {
-			w.pacman.direction = w.prevDirection
-			w.handleCollisions()
+	targets := w.pacman.collisionDetector.DetectCollision()
+targetsLoop:
+	for _, target := range targets {
+		switch obj := target.(type) {
+		case *Wall:
+			if w.pacman.direction != w.prevDirection {
+				w.pacman.direction = w.prevDirection
+				w.handleCollisions()
+			}
+			return
+		case *Pellet:
+			w.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
+			w.ctx.Maze.RemoveElement(obj)
+			w.ctx.Msg.EatPellet <- obj.isPowerful
+			if obj.isPowerful {
+				w.pacman.ChangeState(constants.PowerPelletEaten)
+			}
+		case *Ghost:
+			if obj.AttemptEatPacman(w.pacman) {
+				// Stop processing more targets if PacMan died
+				break targetsLoop
+			}
 		}
-	case *Pellet:
-		w.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
-		w.ctx.Maze.MoveElement(w.pacman)
-		w.ctx.Maze.RemoveElement(obj)
-		w.pacman.sprites.Advance()
-		w.ctx.Msg.EatPellet <- obj.isPowerful
-		if obj.isPowerful {
-			w.pacman.ChangeState(constants.PowerPelletEaten)
-		}
-	case *Ghost:
-		obj.AttemptEatPacman(w.pacman)
-		w.ctx.Maze.MoveElement(w.pacman)
-		w.pacman.sprites.Advance()
-	default:
-		w.ctx.Maze.MoveElement(w.pacman)
-		w.pacman.sprites.Advance()
 	}
+	w.pacman.sprites.Advance()
+	w.ctx.Maze.MoveElement(w.pacman)
 }
 
 // Run main logic of state
@@ -124,31 +126,32 @@ func (p *Power) ApplyTransition(event constants.StateEvent) interfaces.PacmanSta
 }
 
 func (p *Power) handleCollisions() {
-	target := p.pacman.collisionDetector.DetectCollision()
-	switch obj := target.(type) {
-	case *Wall:
-		if p.pacman.direction != p.prevDirection {
-			p.pacman.direction = p.prevDirection
-			p.handleCollisions()
+	targets := p.pacman.collisionDetector.DetectCollision()
+targetsLoop:
+	for _, target := range targets {
+		switch obj := target.(type) {
+		case *Wall:
+			if p.pacman.direction != p.prevDirection {
+				p.pacman.direction = p.prevDirection
+				p.handleCollisions()
+			}
+			return
+		case *Pellet:
+			p.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
+			p.ctx.Maze.RemoveElement(obj)
+			p.ctx.Msg.EatPellet <- obj.isPowerful
+			if obj.isPowerful {
+				p.pacman.ChangeState(constants.PowerPelletEaten)
+			}
+		case *Ghost:
+			if obj.AttemptEatPacman(p.pacman) {
+				// Stop processing more targets if PacMan died
+				break targetsLoop
+			}
 		}
-	case *Pellet:
-		// TODO: increment score, set appropriate state if pellet was power pellet
-		p.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
-		p.ctx.Maze.MoveElement(p.pacman)
-		p.ctx.Maze.RemoveElement(obj)
-		p.pacman.sprites.Advance()
-		p.ctx.Msg.EatPellet <- obj.isPowerful
-		if obj.isPowerful {
-			p.pacman.ChangeState(constants.PowerPelletEaten)
-		}
-	case *Ghost:
-		obj.AttemptEatPacman(p.pacman)
-		p.ctx.Maze.MoveElement(p.pacman)
-		p.pacman.sprites.Advance()
-	default:
-		p.ctx.Maze.MoveElement(p.pacman)
-		p.pacman.sprites.Advance()
 	}
+	p.pacman.sprites.Advance()
+	p.ctx.Maze.MoveElement(p.pacman)
 }
 
 // Run main logic of state

@@ -50,12 +50,12 @@ func (m *Maze) MoveElement(elem interfaces.MovableGameObject) {
 }
 
 // ElementsAt the specified position. Nil if position is out of bounds
-func (m *Maze) ElementsAt(x, y int) *GameObjectGroup {
+func (m *Maze) ElementsAt(x, y int) []interfaces.GameObject {
 	if x < 0 || x >= m.cols || y < 0 || y >= m.rows {
 		return nil
 	}
 
-	return m.logicMap[y][x]
+	return m.logicMap[y][x].GetObjects()
 }
 
 // Draw the complete maze to the screen
