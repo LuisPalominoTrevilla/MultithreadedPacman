@@ -31,7 +31,7 @@ func (c *CollisionDetector) ViableTiles(blockReverse bool) map[constants.Directi
 
 		isViable := true
 		for _, target := range targets {
-			if target.IsUnmovable() {
+			if !target.CanGhostsGoThrough() {
 				isViable = false
 				break
 			}

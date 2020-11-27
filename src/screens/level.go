@@ -55,6 +55,12 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					return err
 				}
 				l.ctx.Maze.AddElement(row, col, wall)
+			case '|':
+				bars, err := models.InitBars(col, row)
+				if err != nil {
+					return err
+				}
+				l.ctx.Maze.AddElement(row, col, bars)
 			case 'S':
 				player, err := models.InitPacman(col, row)
 				if err != nil {

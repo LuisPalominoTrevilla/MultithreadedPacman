@@ -51,7 +51,7 @@ func (w *Walking) handleCollisions() {
 targetsLoop:
 	for _, target := range targets {
 		switch obj := target.(type) {
-		case *Wall:
+		case *Wall, *Bars:
 			if w.pacman.direction != w.prevDirection {
 				w.pacman.direction = w.prevDirection
 				w.handleCollisions()
@@ -130,7 +130,7 @@ func (p *Power) handleCollisions() {
 targetsLoop:
 	for _, target := range targets {
 		switch obj := target.(type) {
-		case *Wall:
+		case *Wall, *Bars:
 			if p.pacman.direction != p.prevDirection {
 				p.pacman.direction = p.prevDirection
 				p.handleCollisions()

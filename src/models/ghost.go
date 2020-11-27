@@ -151,9 +151,9 @@ func (g *Ghost) IsMatrixEditable() bool {
 	return false
 }
 
-// IsUnmovable by any force
-func (g *Ghost) IsUnmovable() bool {
-	return false
+// CanGhostsGoThrough by any force
+func (g *Ghost) CanGhostsGoThrough() bool {
+	return true
 }
 
 // GetLayerIndex of the element

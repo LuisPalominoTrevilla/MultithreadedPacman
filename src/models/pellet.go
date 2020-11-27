@@ -37,9 +37,9 @@ func (p *Pellet) IsMatrixEditable() bool {
 	return false
 }
 
-// IsUnmovable by any force
-func (p *Pellet) IsUnmovable() bool {
-	return false
+// CanGhostsGoThrough by any force
+func (p *Pellet) CanGhostsGoThrough() bool {
+	return true
 }
 
 // GetLayerIndex of the element

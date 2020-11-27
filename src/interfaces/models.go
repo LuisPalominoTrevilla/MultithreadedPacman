@@ -11,7 +11,7 @@ type GameObject interface {
 	GetSprite() *ebiten.Image
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
-	IsUnmovable() bool
+	CanGhostsGoThrough() bool
 	GetLayerIndex() int
 	GetPosition() Location
 }
@@ -22,7 +22,7 @@ type MovableGameObject interface {
 	GetSprite() *ebiten.Image
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
-	IsUnmovable() bool
+	CanGhostsGoThrough() bool
 	GetLayerIndex() int
 	GetPosition() Location
 	SetPosition(x, y int)

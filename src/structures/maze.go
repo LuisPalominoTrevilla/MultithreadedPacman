@@ -23,9 +23,6 @@ func (m *Maze) Dimensions() (width, height int) {
 
 // RemoveElement from the maze
 func (m *Maze) RemoveElement(elem interfaces.GameObject) bool {
-	if elem.IsUnmovable() {
-		return false
-	}
 	from := elem.GetPosition()
 	sourceGroup := m.logicMap[from.Y()][from.X()]
 	valid := sourceGroup.RemoveElement(elem)

@@ -102,9 +102,9 @@ func (p *Pacman) IsMatrixEditable() bool {
 	return true
 }
 
-// IsUnmovable by any force
-func (p *Pacman) IsUnmovable() bool {
-	return false
+// CanGhostsGoThrough by any force
+func (p *Pacman) CanGhostsGoThrough() bool {
+	return true
 }
 
 // GetLayerIndex of the element
