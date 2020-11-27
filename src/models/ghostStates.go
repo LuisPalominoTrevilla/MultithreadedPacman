@@ -155,6 +155,7 @@ func (s *Scatter) GetSprite() *ebiten.Image {
 
 // InitScatter state instance
 func InitScatter(ghost *Ghost, ctx *contexts.GameContext) *Scatter {
+	ghost.layerIndex = constants.GhostLayerIdx
 	ghost.speed = constants.DefaultGhostFPS
 	scatter := Scatter{
 		ghost:                    ghost,
@@ -241,6 +242,7 @@ func (c *Chase) GetSprite() *ebiten.Image {
 
 // InitChase state instance
 func InitChase(ghost *Ghost, ctx *contexts.GameContext) *Chase {
+	ghost.layerIndex = constants.GhostLayerIdx
 	ghost.speed = constants.DefaultGhostFPS
 	chase := Chase{
 		ghost:                    ghost,
@@ -325,6 +327,7 @@ func (f *Fleeing) GetSprite() *ebiten.Image {
 
 // InitFleeing state instance
 func InitFleeing(ghost *Ghost, ctx *contexts.GameContext) *Fleeing {
+	ghost.layerIndex = constants.FleeingGhostLayerIdx
 	ghost.speed = constants.FleeingGhostFPS
 	fleeing := Fleeing{
 		ghost:                    ghost,
@@ -409,6 +412,7 @@ func (f *Flickering) GetSprite() *ebiten.Image {
 
 // InitFlickering state instance
 func InitFlickering(ghost *Ghost, ctx *contexts.GameContext) *Flickering {
+	ghost.layerIndex = constants.FleeingGhostLayerIdx
 	ghost.speed = constants.FleeingGhostFPS
 	flickering := Flickering{
 		ghost:                    ghost,
@@ -492,6 +496,7 @@ func (e *Eaten) GetSprite() *ebiten.Image {
 
 // InitEaten state instance
 func InitEaten(ghost *Ghost, ctx *contexts.GameContext) *Eaten {
+	ghost.layerIndex = constants.FleeingGhostLayerIdx
 	ghost.speed = constants.EatenGhostFPS
 	eaten := Eaten{
 		ghost:         ghost,

@@ -12,6 +12,7 @@ type GameObject interface {
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
 	IsUnmovable() bool
+	GetLayerIndex() int
 	GetPosition() Location
 }
 
@@ -22,6 +23,7 @@ type MovableGameObject interface {
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
 	IsUnmovable() bool
+	GetLayerIndex() int
 	GetPosition() Location
 	SetPosition(x, y int)
 }

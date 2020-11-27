@@ -42,6 +42,11 @@ func (p *Pellet) IsUnmovable() bool {
 	return false
 }
 
+// GetLayerIndex of the element
+func (p *Pellet) GetLayerIndex() int {
+	return constants.PelletLayerIdx
+}
+
 // GetPosition of the element
 func (p *Pellet) GetPosition() interfaces.Location {
 	return p.position

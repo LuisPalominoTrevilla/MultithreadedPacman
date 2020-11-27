@@ -55,7 +55,6 @@ func (m *Maze) ElementsAt(x, y int) *GameObjectGroup {
 		return nil
 	}
 
-	// TODO: return array ordered by importance
 	return m.logicMap[y][x]
 }
 
@@ -63,8 +62,9 @@ func (m *Maze) ElementsAt(x, y int) *GameObjectGroup {
 func (m *Maze) Draw(screen *ebiten.Image) {
 	for i := 0; i < m.rows; i++ {
 		for j := 0; j < m.cols; j++ {
-			groupObject := m.logicMap[i][j]
-			for _, object := range groupObject.Elements() {
+			objects := m.logicMap[i][j].GetObjects()
+			for k := range objects {
+				object := objects[len(objects)-1-k]
 				object.Draw(screen, j, i)
 			}
 		}

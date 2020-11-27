@@ -1,20 +1,38 @@
 package constants
 
-// TileSize represents the size of the side of a square tile
+// Standard constants used in the codebase
 const (
-	TileSize                = 32
-	MaxGhostsAllowed        = 8
-	DefaultPacmanFPS        = 6
-	PowerPacmanFPS          = 8
-	DefaultGhostFPS         = 6
-	FleeingGhostFPS         = 4
-	EatenGhostFPS           = 12
-	InfiniteChasePhase      = 3
-	TimeBetweenSpawns       = 3
+	TileSize           = 32
+	MaxGhostsAllowed   = 8
+	InfiniteChasePhase = 3
+	TimeBetweenSpawns  = 3
+)
+
+// Speed constants
+const (
+	DefaultPacmanFPS = 6
+	PowerPacmanFPS   = 8
+	DefaultGhostFPS  = 6
+	FleeingGhostFPS  = 4
+	EatenGhostFPS    = 12
+)
+
+// Fixed duration of phases
+const (
 	ScatterModeDuration     = 7
 	ChaseModeDuration       = 2
 	FlickeringStateDuration = 2
 	PowerPelletDuration     = 7
+)
+
+// Default layer indexes for objects
+const (
+	WallLayerIdx         = 6
+	BarsLayerIdx         = 5
+	GhostLayerIdx        = 4
+	PacmanLayerIdx       = 3
+	FleeingGhostLayerIdx = 2
+	PelletLayerIdx       = 1
 )
 
 // GameState represents the game state

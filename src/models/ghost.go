@@ -17,6 +17,7 @@ import (
 // Ghost represents the main enemy
 type Ghost struct {
 	state             interfaces.GhostState
+	layerIndex        int
 	phase             int
 	position          interfaces.Location
 	speed             int
@@ -154,6 +155,11 @@ func (g *Ghost) IsUnmovable() bool {
 	return false
 }
 
+// GetLayerIndex of the element
+func (g *Ghost) GetLayerIndex() int {
+	return g.layerIndex
+}
+
 // GetPosition of the element
 func (g *Ghost) GetPosition() interfaces.Location {
 	return g.position
@@ -173,6 +179,7 @@ func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDete
 // InitGhost enemy for the level
 func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
+		layerIndex:    constants.GhostLayerIdx,
 		phase:         0,
 		position:      structures.InitPosition(x, y),
 		idleStateTime: idleStateTime,

@@ -41,6 +41,11 @@ func (w *Wall) IsUnmovable() bool {
 	return true
 }
 
+// GetLayerIndex of the element
+func (w *Wall) GetLayerIndex() int {
+	return constants.WallLayerIdx
+}
+
 // GetPosition of the element
 func (w *Wall) GetPosition() interfaces.Location {
 	return w.position

@@ -107,6 +107,11 @@ func (p *Pacman) IsUnmovable() bool {
 	return false
 }
 
+// GetLayerIndex of the element
+func (p *Pacman) GetLayerIndex() int {
+	return constants.PacmanLayerIdx
+}
+
 // GetPosition of the element
 func (p *Pacman) GetPosition() interfaces.Location {
 	return p.position

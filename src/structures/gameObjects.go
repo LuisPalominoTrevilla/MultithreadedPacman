@@ -1,6 +1,10 @@
 package structures
 
-import "github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
+import (
+	"sort"
+
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
+)
 
 // GameObjectGroup represents a group of objects that are coexisting in the same tile
 type GameObjectGroup struct {
@@ -35,11 +39,14 @@ func (g *GameObjectGroup) ElementOnTop() interfaces.GameObject {
 	return g.elements[len(g.elements)-1]
 }
 
-// Elements copy of the game object
-func (g *GameObjectGroup) Elements() []interfaces.GameObject {
-	elems := make([]interfaces.GameObject, len(g.elements))
-	copy(elems, g.elements)
-	return elems
+// GetObjects that belong to the group
+func (g *GameObjectGroup) GetObjects() []interfaces.GameObject {
+	objs := make([]interfaces.GameObject, len(g.elements))
+	copy(objs, g.elements)
+	sort.SliceStable(objs, func(i, j int) bool {
+		return objs[i].GetLayerIndex() > objs[j].GetLayerIndex()
+	})
+	return objs
 }
 
 // AddElement on top of the group object
