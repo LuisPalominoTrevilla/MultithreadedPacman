@@ -8,6 +8,7 @@ import (
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/models"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
@@ -31,6 +32,12 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 
 	defer f.Close()
 
+	ghostBases := map[rune]constants.GhostType{
+		'B': constants.Blinky,
+		'P': constants.Pinky,
+		'I': constants.Inky,
+		'C': constants.Clyde,
+	}
 	l.ctx.Maze = structures.InitMaze()
 	input := bufio.NewScanner(f)
 	for row := 0; input.Scan(); row++ {
@@ -38,13 +45,17 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 		l.ctx.Maze.AddRow((len(line)))
 		for col, elem := range line {
 			switch elem {
-			case '#':
+			case '#', 'B', 'P', 'I', 'C':
+				if ghostType, ok := ghostBases[elem]; ok {
+					l.ctx.GhostBases[ghostType] = structures.InitPosition(col, row)
+				}
+
 				wall, err := models.InitWall(col, row)
 				if err != nil {
 					return err
 				}
 				l.ctx.Maze.AddElement(row, col, wall)
-			case 'P':
+			case 'S':
 				player, err := models.InitPacman(col, row)
 				if err != nil {
 					return err
@@ -64,7 +75,7 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					ghost, err := models.InitGhost(
 						col,
 						row,
-						float64(i)*constants.TimeBetweenSpawns+float64(i),
+						float64(i)*constants.TimeBetweenSpawns,
 						allGhosts[i%len(allGhosts)],
 					)
 					if err != nil {
@@ -73,7 +84,7 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.ctx.Maze))
 					l.enemies = append(l.enemies, ghost)
 				}
-				l.ctx.GhostBase = structures.InitPosition(col, row)
+				l.ctx.GhostHome = structures.InitPosition(col, row)
 				// Add to maze in reverse order so that red ghost will always be painted first
 				for i := len(l.enemies) - 1; i >= 0; i-- {
 					l.ctx.Maze.AddElement(row, col, l.enemies[i])
@@ -158,6 +169,7 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 		phase:   0,
 		enemies: make([]*models.Ghost, 0, numEnemies),
 		ctx: &contexts.GameContext{
+			GhostBases: make(map[constants.GhostType]interfaces.Location),
 			Msg: &structures.MessageBroker{
 				EatPellet:          make(chan bool),
 				PhaseChange:        make(chan int),

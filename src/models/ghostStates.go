@@ -125,7 +125,7 @@ func (s *Scatter) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 // Run main logic of state
 func (s *Scatter) Run() {
 	if !s.recentlyChangedDirection {
-		s.ghost.turnTowards(nil, false, true)
+		s.ghost.turnTowards(s.ctx.GhostBases[s.ghost.kind], false, true)
 	}
 	s.recentlyChangedDirection = s.ghost.direction != s.prevDirection
 	if !s.recentlyChangedDirection {
@@ -475,7 +475,7 @@ func (e *Eaten) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 
 // Run main logic of state
 func (e *Eaten) Run() {
-	e.ghost.turnTowards(e.ctx.GhostBase, false, true)
+	e.ghost.turnTowards(e.ctx.GhostHome, false, true)
 	shouldMove := true
 	targets := e.ghost.collisionDetector.DetectCollision()
 	for _, target := range targets {
@@ -491,7 +491,7 @@ func (e *Eaten) Run() {
 		e.ghost.advanceSprites()
 	}
 	e.prevDirection = e.ghost.direction
-	if e.ghost.position.DistanceTo(e.ctx.GhostBase) < 1 {
+	if e.ghost.position.DistanceTo(e.ctx.GhostHome) < 1 {
 		e.ghost.ChangeState(constants.ReachBase)
 	}
 }

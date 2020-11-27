@@ -20,7 +20,7 @@ const (
 // Fixed duration of phases
 const (
 	ScatterModeDuration     = 7
-	ChaseModeDuration       = 2
+	ChaseModeDuration       = 20
 	FlickeringStateDuration = 2
 	PowerPelletDuration     = 7
 )
