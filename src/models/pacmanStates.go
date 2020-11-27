@@ -31,7 +31,7 @@ func getPacmanStateInstance(
 // Walking state of the player
 type Walking struct {
 	pacman        *Pacman
-	gameContext   *contexts.GameContext
+	ctx           *contexts.GameContext
 	transitions   map[constants.StateEvent]constants.PacmanState
 	prevDirection constants.Direction
 }
@@ -43,7 +43,7 @@ func (w *Walking) ApplyTransition(event constants.StateEvent) interfaces.PacmanS
 		return w
 	}
 
-	return getPacmanStateInstance(state, w.pacman, w.gameContext)
+	return getPacmanStateInstance(state, w.pacman, w.ctx)
 }
 
 func (w *Walking) handleCollisions() {
@@ -55,19 +55,20 @@ func (w *Walking) handleCollisions() {
 			w.handleCollisions()
 		}
 	case *Pellet:
-		w.gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		w.gameContext.Maze.MoveElement(w.pacman, true)
+		w.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
+		w.ctx.Maze.MoveElement(w.pacman)
+		w.ctx.Maze.RemoveElement(obj)
 		w.pacman.sprites.Advance()
-		w.gameContext.Msg.EatPellet <- obj.isPowerful
+		w.ctx.Msg.EatPellet <- obj.isPowerful
 		if obj.isPowerful {
 			w.pacman.ChangeState(constants.PowerPelletEaten)
 		}
 	case *Ghost:
 		obj.AttemptEatPacman(w.pacman)
-		w.gameContext.Maze.MoveElement(w.pacman, false)
+		w.ctx.Maze.MoveElement(w.pacman)
 		w.pacman.sprites.Advance()
 	default:
-		w.gameContext.Maze.MoveElement(w.pacman, false)
+		w.ctx.Maze.MoveElement(w.pacman)
 		w.pacman.sprites.Advance()
 	}
 }
@@ -91,7 +92,7 @@ func InitWalking(pacman *Pacman, ctx *contexts.GameContext) *Walking {
 	pacman.speed = constants.DefaultPacmanFPS
 	walking := Walking{
 		pacman:        pacman,
-		gameContext:   ctx,
+		ctx:           ctx,
 		transitions:   make(map[constants.StateEvent]constants.PacmanState),
 		prevDirection: pacman.direction,
 	}
@@ -106,7 +107,7 @@ func InitWalking(pacman *Pacman, ctx *contexts.GameContext) *Walking {
 // Power state of the player
 type Power struct {
 	pacman        *Pacman
-	gameContext   *contexts.GameContext
+	ctx           *contexts.GameContext
 	transitions   map[constants.StateEvent]constants.PacmanState
 	createdAt     time.Time
 	prevDirection constants.Direction
@@ -119,7 +120,7 @@ func (p *Power) ApplyTransition(event constants.StateEvent) interfaces.PacmanSta
 		return p
 	}
 
-	return getPacmanStateInstance(state, p.pacman, p.gameContext)
+	return getPacmanStateInstance(state, p.pacman, p.ctx)
 }
 
 func (p *Power) handleCollisions() {
@@ -132,19 +133,20 @@ func (p *Power) handleCollisions() {
 		}
 	case *Pellet:
 		// TODO: increment score, set appropriate state if pellet was power pellet
-		p.gameContext.SoundPlayer.PlayOnce(constants.MunchEffect)
-		p.gameContext.Maze.MoveElement(p.pacman, true)
+		p.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
+		p.ctx.Maze.MoveElement(p.pacman)
+		p.ctx.Maze.RemoveElement(obj)
 		p.pacman.sprites.Advance()
-		p.gameContext.Msg.EatPellet <- obj.isPowerful
+		p.ctx.Msg.EatPellet <- obj.isPowerful
 		if obj.isPowerful {
 			p.pacman.ChangeState(constants.PowerPelletEaten)
 		}
 	case *Ghost:
 		obj.AttemptEatPacman(p.pacman)
-		p.gameContext.Maze.MoveElement(p.pacman, false)
+		p.ctx.Maze.MoveElement(p.pacman)
 		p.pacman.sprites.Advance()
 	default:
-		p.gameContext.Maze.MoveElement(p.pacman, false)
+		p.ctx.Maze.MoveElement(p.pacman)
 		p.pacman.sprites.Advance()
 	}
 }
@@ -158,7 +160,7 @@ func (p *Power) Run() {
 	p.prevDirection = p.pacman.direction
 	timer := time.Now().Sub(p.createdAt).Seconds()
 	if timer > constants.PowerPelletDuration {
-		p.gameContext.Msg.PowerPelletWoreOff <- struct{}{}
+		p.ctx.Msg.PowerPelletWoreOff <- struct{}{}
 		p.pacman.ChangeState(constants.PowerPelletWearOff)
 	}
 }
@@ -173,7 +175,7 @@ func InitPower(pacman *Pacman, ctx *contexts.GameContext) *Power {
 	pacman.speed = constants.PowerPacmanFPS
 	power := Power{
 		pacman:        pacman,
-		gameContext:   ctx,
+		ctx:           ctx,
 		transitions:   make(map[constants.StateEvent]constants.PacmanState),
 		createdAt:     time.Now(),
 		prevDirection: pacman.direction,

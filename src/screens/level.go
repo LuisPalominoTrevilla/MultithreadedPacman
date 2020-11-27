@@ -17,7 +17,7 @@ import (
 // Level represents a level with all of its contents
 type Level struct {
 	phase           int
-	context         *contexts.GameContext
+	ctx             *contexts.GameContext
 	player          *models.Pacman
 	enemies         []*models.Ghost
 	backgroundSound *modules.InfiniteAudio
@@ -31,28 +31,28 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 
 	defer f.Close()
 
-	l.context.Maze = structures.InitMaze()
+	l.ctx.Maze = structures.InitMaze()
 	input := bufio.NewScanner(f)
 	for row := 0; input.Scan(); row++ {
 		line := input.Text()
-		l.context.Maze.AddRow((len(line)))
+		l.ctx.Maze.AddRow((len(line)))
 		for col, elem := range line {
 			switch elem {
 			case '#':
-				wall, err := models.InitWall()
+				wall, err := models.InitWall(col, row)
 				if err != nil {
 					return err
 				}
-				l.context.Maze.AddElement(row, col, wall)
+				l.ctx.Maze.AddElement(row, col, wall)
 			case 'P':
 				player, err := models.InitPacman(col, row)
 				if err != nil {
 					return err
 				}
-				player.AttachCollisionDetector(modules.InitCollisionDetector(player, l.context.Maze))
-				l.context.MainPlayer = player
+				player.AttachCollisionDetector(modules.InitCollisionDetector(player, l.ctx.Maze))
+				l.ctx.MainPlayer = player
 				l.player = player
-				l.context.Maze.AddElement(row, col, player)
+				l.ctx.Maze.AddElement(row, col, player)
 			case 'G':
 				allGhosts := []constants.GhostType{
 					constants.Blinky,
@@ -70,20 +70,20 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					if err != nil {
 						return err
 					}
-					ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.context.Maze))
+					ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.ctx.Maze))
 					l.enemies = append(l.enemies, ghost)
 				}
-				l.context.GhostBase = structures.InitPosition(col, row)
+				l.ctx.GhostBase = structures.InitPosition(col, row)
 				// Add to maze in reverse order so that red ghost will always be painted first
 				for i := len(l.enemies) - 1; i >= 0; i-- {
-					l.context.Maze.AddElement(row, col, l.enemies[i])
+					l.ctx.Maze.AddElement(row, col, l.enemies[i])
 				}
 			case '.', '@':
-				pellet, err := models.InitPellet(elem == '@')
+				pellet, err := models.InitPellet(col, row, elem == '@')
 				if err != nil {
 					return err
 				}
-				l.context.Maze.AddElement(row, col, pellet)
+				l.ctx.Maze.AddElement(row, col, pellet)
 			}
 		}
 	}
@@ -97,14 +97,14 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 
 // Size of the level
 func (l *Level) Size() (width, height int) {
-	return l.context.Maze.Dimensions()
+	return l.ctx.Maze.Dimensions()
 }
 
 // Run logic of the level, incluiding redraws
 func (l *Level) Run() {
 	// TODO: Uncomment lines to play initial sound of level
 	// wait := make(chan struct{})
-	// l.context.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
+	// l.ctx.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
 	// <-wait
 	sirenSounds := []constants.SoundEffect{
 		constants.GhostSirenPhase1,
@@ -113,19 +113,19 @@ func (l *Level) Run() {
 		constants.GhostSirenPhase4,
 	}
 
-	l.backgroundSound = l.context.SoundPlayer.PlayOnLoop(sirenSounds[l.phase])
-	go l.player.Run(l.context)
+	l.backgroundSound = l.ctx.SoundPlayer.PlayOnLoop(sirenSounds[l.phase])
+	go l.player.Run(l.ctx)
 	for _, enemy := range l.enemies {
-		go enemy.Run(l.context)
+		go enemy.Run(l.ctx)
 	}
 	for {
 		select {
-		case newPhase := <-l.context.Msg.PhaseChange:
+		case newPhase := <-l.ctx.Msg.PhaseChange:
 			if newPhase > l.phase {
 				l.backgroundSound.Replace(sirenSounds[newPhase%len(sirenSounds)], false)
 				l.phase = newPhase
 			}
-		case isPowerful := <-l.context.Msg.EatPellet:
+		case isPowerful := <-l.ctx.Msg.EatPellet:
 			// TODO: increment counter and check for end game
 			if isPowerful {
 				l.backgroundSound.Replace(constants.PowerPellet, true)
@@ -133,7 +133,7 @@ func (l *Level) Run() {
 					enemy.ChangeState(constants.PowerPelletEaten)
 				}
 			}
-		case <-l.context.Msg.PowerPelletWoreOff:
+		case <-l.ctx.Msg.PowerPelletWoreOff:
 			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], true)
 		}
 	}
@@ -141,7 +141,7 @@ func (l *Level) Run() {
 
 // Draw the entire level
 func (l *Level) Draw(screen *ebiten.Image) {
-	l.context.Maze.Draw(screen)
+	l.ctx.Maze.Draw(screen)
 	// TODO: Draw scoreboard and stuff on the bottom of the screen (Add more space first)
 }
 
@@ -157,7 +157,7 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 	l := Level{
 		phase:   0,
 		enemies: make([]*models.Ghost, 0, numEnemies),
-		context: &contexts.GameContext{
+		ctx: &contexts.GameContext{
 			Msg: &structures.MessageBroker{
 				EatPellet:          make(chan bool),
 				PhaseChange:        make(chan int),
@@ -169,7 +169,7 @@ func InitLevel(levelFile string, numEnemies int) (*Level, error) {
 	if err != nil {
 		return nil, err
 	}
-	l.context.SoundPlayer = soundPlayer
+	l.ctx.SoundPlayer = soundPlayer
 	err = l.parseLevel(levelFile, numEnemies)
 	return &l, err
 }

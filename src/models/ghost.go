@@ -112,16 +112,16 @@ func (g *Ghost) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 }
 
 // Run the behavior of the ghost
-func (g *Ghost) Run(gameContext *contexts.GameContext) {
+func (g *Ghost) Run(ctx *contexts.GameContext) {
 	if g.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
 	}
 
-	g.state = InitIdle(g, gameContext)
+	g.state = InitIdle(g, ctx)
 	for {
-		gameContext.MazeMutex.Lock()
+		ctx.MazeMutex.Lock()
 		g.state.Run()
-		gameContext.MazeMutex.Unlock()
+		ctx.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/g.speed) * time.Millisecond)
 	}
 }

@@ -2,13 +2,16 @@ package models
 
 import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // Wall represents a wall
 type Wall struct {
+	position interfaces.Location
 	sprite   *ebiten.Image
 	animator *modules.Animator
 }
@@ -38,9 +41,16 @@ func (w *Wall) IsUnmovable() bool {
 	return true
 }
 
+// GetPosition of the element
+func (w *Wall) GetPosition() interfaces.Location {
+	return w.position
+}
+
 // InitWall of the maze
-func InitWall() (*Wall, error) {
-	wall := Wall{}
+func InitWall(x, y int) (*Wall, error) {
+	wall := Wall{
+		position: structures.InitPosition(x, y),
+	}
 	img, _, err := ebitenutil.NewImageFromFile("assets/wall.png")
 	wall.sprite = img
 	wall.animator = modules.InitAnimator(&wall)

@@ -21,12 +21,21 @@ func (m *Maze) Dimensions() (width, height int) {
 	return m.cols, m.rows
 }
 
-// MoveElement within the maze without checking whether the move is appropriate
-func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement bool) {
+// RemoveElement from the maze
+func (m *Maze) RemoveElement(elem interfaces.GameObject) bool {
+	if elem.IsUnmovable() {
+		return false
+	}
 	from := elem.GetPosition()
 	sourceGroup := m.logicMap[from.Y()][from.X()]
-
 	valid := sourceGroup.RemoveElement(elem)
+	return valid
+}
+
+// MoveElement within the maze without checking whether the move is appropriate
+func (m *Maze) MoveElement(elem interfaces.MovableGameObject) {
+	from := elem.GetPosition()
+	valid := m.RemoveElement(elem)
 	if !valid {
 		log.Println("Could not find element to move")
 		return
@@ -36,9 +45,6 @@ func (m *Maze) MoveElement(elem interfaces.MovableGameObject, delDestElement boo
 	toX := utils.Mod(from.X()+direction.X, m.cols)
 	toY := utils.Mod(from.Y()+direction.Y, m.rows)
 	destinationGroup := m.logicMap[toY][toX]
-	if delDestElement {
-		destinationGroup.RemoveTopElement()
-	}
 	destinationGroup.AddElement(elem)
 	elem.SetPosition(toX, toY)
 }

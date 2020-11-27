@@ -64,17 +64,17 @@ func (p *Pacman) EatGhost(g *Ghost, ctx *contexts.GameContext) {
 }
 
 // Run the behavior of the player
-func (p *Pacman) Run(gameContext *contexts.GameContext) {
+func (p *Pacman) Run(ctx *contexts.GameContext) {
 	if p.collisionDetector == nil {
 		log.Fatal("Collision detector is not attached")
 	}
 
-	p.state = InitWalking(p, gameContext)
+	p.state = InitWalking(p, ctx)
 	go p.keyListener()
 	for {
-		gameContext.MazeMutex.Lock()
+		ctx.MazeMutex.Lock()
 		p.state.Run()
-		gameContext.MazeMutex.Unlock()
+		ctx.MazeMutex.Unlock()
 		time.Sleep(time.Duration(1000/p.speed) * time.Millisecond)
 	}
 }

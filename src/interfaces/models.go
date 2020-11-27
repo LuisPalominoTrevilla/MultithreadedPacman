@@ -12,6 +12,7 @@ type GameObject interface {
 	GetDirection() constants.Direction
 	IsMatrixEditable() bool
 	IsUnmovable() bool
+	GetPosition() Location
 }
 
 // MovableGameObject interface special tipe of GameObject

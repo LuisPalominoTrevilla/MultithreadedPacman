@@ -17,24 +17,14 @@ func (g *GameObjectGroup) findIndex(target interfaces.GameObject) int {
 	return -1
 }
 
-func (g *GameObjectGroup) removeByIndex(index int) interfaces.GameObject {
-	if index < 0 || index >= len(g.elements) {
-		return nil
-	}
-	removed := g.elements[index]
-	g.elements = append(g.elements[:index], g.elements[index+1:]...)
-	return removed
-}
-
 // RemoveElement from the group
 func (g *GameObjectGroup) RemoveElement(target interfaces.GameObject) bool {
 	index := g.findIndex(target)
-	return g.removeByIndex(index) != nil
-}
-
-// RemoveTopElement from the group
-func (g *GameObjectGroup) RemoveTopElement() interfaces.GameObject {
-	return g.removeByIndex(len(g.elements) - 1)
+	if index < 0 || index >= len(g.elements) {
+		return false
+	}
+	g.elements = append(g.elements[:index], g.elements[index+1:]...)
+	return true
 }
 
 // ElementOnTop of the group object. Nil if empty

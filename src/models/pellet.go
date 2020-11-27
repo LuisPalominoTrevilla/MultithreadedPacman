@@ -2,13 +2,16 @@ package models
 
 import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // Pellet represents any pellet in the game
 type Pellet struct {
+	position   interfaces.Location
 	sprite     *ebiten.Image
 	isPowerful bool
 	animator   *modules.Animator
@@ -39,9 +42,17 @@ func (p *Pellet) IsUnmovable() bool {
 	return false
 }
 
+// GetPosition of the element
+func (p *Pellet) GetPosition() interfaces.Location {
+	return p.position
+}
+
 // InitPellet of the maze
-func InitPellet(isPowerful bool) (*Pellet, error) {
-	pellet := Pellet{}
+func InitPellet(x, y int, isPowerful bool) (*Pellet, error) {
+	pellet := Pellet{
+		isPowerful: isPowerful,
+		position:   structures.InitPosition(x, y),
+	}
 	var assetFile string
 	if isPowerful {
 		assetFile = "assets/super-pellet.png"
@@ -51,7 +62,6 @@ func InitPellet(isPowerful bool) (*Pellet, error) {
 
 	img, _, err := ebitenutil.NewImageFromFile(assetFile)
 	pellet.sprite = img
-	pellet.isPowerful = isPowerful
 	pellet.animator = modules.InitAnimator(&pellet)
 	return &pellet, err
 }
