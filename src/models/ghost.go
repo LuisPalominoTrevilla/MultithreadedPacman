@@ -54,7 +54,7 @@ func (g *Ghost) orientedSprite() *ebiten.Image {
 	}
 }
 
-func (g *Ghost) attemptChangeDirection(target interfaces.Location, runAway, blockReverse bool) {
+func (g *Ghost) turnTowards(target interfaces.Location, runAway, blockReverse bool) {
 	viableTiles := g.collisionDetector.ViableTiles(blockReverse)
 	options := len(viableTiles)
 	if options == 0 {
@@ -107,8 +107,8 @@ func (g *Ghost) ChangeState(event constants.StateEvent) {
 }
 
 // AttemptEatPacman given the current ghost state
-func (g *Ghost) AttemptEatPacman(obj interfaces.MovableGameObject) {
-	g.state.AttemptEatPacman(obj)
+func (g *Ghost) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
+	return g.state.AttemptEatPacman(obj)
 }
 
 // Run the behavior of the ghost
@@ -179,6 +179,7 @@ func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (
 		speed:         constants.DefaultGhostFPS,
 		sprites:       make(map[string]*structures.SpriteSequence),
 	}
+
 	categories := []string{"left", "right", "down", "up", "panic", "flicker"}
 	for _, category := range categories {
 		gType := string(ghostType)
@@ -188,6 +189,18 @@ func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (
 		sprites := []string{
 			"assets/ghost/" + gType + "/ghost-" + category + "-1.png",
 			"assets/ghost/" + gType + "/ghost-" + category + "-2.png",
+		}
+		seq, err := structures.InitSpriteSequence(sprites)
+		if err != nil {
+			return nil, err
+		}
+		ghost.sprites[category] = seq
+	}
+
+	categories = []string{"eaten-left", "eaten-right", "eaten-down", "eaten-up"}
+	for _, category := range categories {
+		sprites := []string{
+			"assets/ghost/ghost-" + category + ".png",
 		}
 		seq, err := structures.InitSpriteSequence(sprites)
 		if err != nil {

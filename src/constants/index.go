@@ -7,7 +7,8 @@ const (
 	DefaultPacmanFPS        = 6
 	PowerPacmanFPS          = 8
 	DefaultGhostFPS         = 6
-	FleeingGhostFPS         = 5
+	FleeingGhostFPS         = 4
+	EatenGhostFPS           = 12
 	InfiniteChasePhase      = 3
 	TimeBetweenSpawns       = 3
 	ScatterModeDuration     = 7
@@ -32,6 +33,9 @@ type SoundEffect int
 // MunchEffect - Pacman munch sound FX
 // GameStart - Pacman's main game start theme
 // GhostSirenPhaseX - Ghost siren sounds
+// PowerPellet - Power pellet background music
+// EatGhostEffect - Eating ghost sound effect
+// Retreating - Ghost reatreating audio
 const (
 	MunchEffect SoundEffect = iota
 	GameStart
@@ -40,6 +44,8 @@ const (
 	GhostSirenPhase3
 	GhostSirenPhase4
 	PowerPellet
+	EatGhostEffect
+	Retreating
 )
 
 // AudioFiles for each sound effect
@@ -51,6 +57,8 @@ var AudioFiles = map[SoundEffect][]string{
 	GhostSirenPhase3: {"assets/audio/siren_3.wav"},
 	GhostSirenPhase4: {"assets/audio/siren_4.wav"},
 	PowerPellet:      {"assets/audio/power_pellet.wav"},
+	EatGhostEffect:   {"assets/audio/eat_ghost.wav"},
+	Retreating:       {"assets/audio/retreating.wav"},
 }
 
 // GhostType represents a type of ghost
@@ -75,12 +83,16 @@ type StateEvent int
 // PowerPelletEaten - Whenever PacMan eats a power pellet
 // PowerPelletWearOff - Whenever PacMan's power pellet wears off
 // StartFlickering - A ghost will get imune to the pellet soon
+// GhostEaten - Whenever pacman eats a ghost
+// ReachBase = Whenever a ghost reaches base after retreating
 const (
 	Scatter StateEvent = iota
 	ChasePacman
 	PowerPelletEaten
 	PowerPelletWearOff
 	StartFlickering
+	EatGhost
+	ReachBase
 )
 
 // GhostState represents a ghost state
@@ -91,12 +103,14 @@ type GhostState int
 // ChaseState - Behavior to chase PacMan
 // FleeingState - Fleeing PacMan
 // FlickeringState - Still fleeing PacMan but about to stop
+// EatenState - When the Ghost was just eaten by PacMan
 const (
 	IdleState GhostState = iota
 	ScatterState
 	ChaseState
 	FleeingState
 	FlickeringState
+	EatenState
 )
 
 // PacmanState represents a ghost state

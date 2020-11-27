@@ -73,6 +73,7 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					ghost.AttachCollisionDetector(modules.InitCollisionDetector(ghost, l.context.Maze))
 					l.enemies = append(l.enemies, ghost)
 				}
+				l.context.GhostBase = structures.InitPosition(col, row)
 				// Add to maze in reverse order so that red ghost will always be painted first
 				for i := len(l.enemies) - 1; i >= 0; i-- {
 					l.context.Maze.AddElement(row, col, l.enemies[i])

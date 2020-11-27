@@ -13,6 +13,7 @@ type GameContext struct {
 	MainPlayer  interfaces.MovableGameObject
 	MazeMutex   sync.Mutex
 	Maze        *structures.Maze
+	GhostBase   interfaces.Location
 	SoundPlayer *modules.SoundPlayer
 	Msg         *structures.MessageBroker
 }

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -59,8 +58,9 @@ func (p *Pacman) ChangeState(event constants.StateEvent) {
 }
 
 // EatGhost and send it back to hell
-func (p *Pacman) EatGhost(g *Ghost) {
-	fmt.Println("Eating ghost")
+func (p *Pacman) EatGhost(g *Ghost, ctx *contexts.GameContext) {
+	ctx.SoundPlayer.PlayOnce(constants.EatGhostEffect)
+	g.ChangeState(constants.EatGhost)
 }
 
 // Run the behavior of the player

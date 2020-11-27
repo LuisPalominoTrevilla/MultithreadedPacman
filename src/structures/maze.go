@@ -49,6 +49,7 @@ func (m *Maze) ElementsAt(x, y int) *GameObjectGroup {
 		return nil
 	}
 
+	// TODO: return array ordered by importance
 	return m.logicMap[y][x]
 }
 

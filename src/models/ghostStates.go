@@ -7,6 +7,7 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -26,6 +27,8 @@ func getGhostStateInstance(
 		return InitFleeing(ghost, ctx)
 	case constants.FlickeringState:
 		return InitFlickering(ghost, ctx)
+	case constants.EatenState:
+		return InitEaten(ghost, ctx)
 	default:
 		return nil
 	}
@@ -54,7 +57,9 @@ func (i *Idle) ApplyTransition(event constants.StateEvent) interfaces.GhostState
 }
 
 // AttemptEatPacman given the current state
-func (i *Idle) AttemptEatPacman(obj interfaces.MovableGameObject) {}
+func (i *Idle) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
+	return false
+}
 
 // Run main logic of state
 func (i *Idle) Run() {
@@ -106,20 +111,21 @@ func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 }
 
 // AttemptEatPacman given the current state
-func (s *Scatter) AttemptEatPacman(obj interfaces.MovableGameObject) {
+func (s *Scatter) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 	_, ok := obj.(*Pacman)
 	if !ok {
-		return
+		return false
 	}
 
 	fmt.Println("Pacman dead")
 	// TODO: Change pacman state to eaten
+	return true
 }
 
 // Run main logic of state
 func (s *Scatter) Run() {
 	if !s.recentlyChangedDirection {
-		s.ghost.attemptChangeDirection(nil, false, true)
+		s.ghost.turnTowards(nil, false, true)
 	}
 	s.recentlyChangedDirection = s.ghost.direction != s.prevDirection
 	if !s.recentlyChangedDirection {
@@ -188,20 +194,21 @@ func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostStat
 }
 
 // AttemptEatPacman given the current state
-func (c *Chase) AttemptEatPacman(obj interfaces.MovableGameObject) {
+func (c *Chase) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 	_, ok := obj.(*Pacman)
 	if !ok {
-		return
+		return false
 	}
 
 	fmt.Println("Pacman dead")
 	// TODO: Change pacman state to eaten
+	return true
 }
 
 // Run main logic of state
 func (c *Chase) Run() {
 	if !c.recentlyChangedDirection {
-		c.ghost.attemptChangeDirection(c.gameContext.MainPlayer.GetPosition(), false, true)
+		c.ghost.turnTowards(c.gameContext.MainPlayer.GetPosition(), false, true)
 	}
 	c.recentlyChangedDirection = c.ghost.direction != c.prevDirection
 	if !c.recentlyChangedDirection {
@@ -274,18 +281,19 @@ func (f *Fleeing) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 }
 
 // AttemptEatPacman given the current state
-func (f *Fleeing) AttemptEatPacman(obj interfaces.MovableGameObject) {
+func (f *Fleeing) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 	pacman, ok := obj.(*Pacman)
 	if !ok {
-		return
+		return false
 	}
-	pacman.EatGhost(f.ghost)
+	pacman.EatGhost(f.ghost, f.gameContext)
+	return false
 }
 
 // Run main logic of state
 func (f *Fleeing) Run() {
 	if !f.recentlyChangedDirection {
-		f.ghost.attemptChangeDirection(f.gameContext.MainPlayer.GetPosition(), true, f.blockReverse)
+		f.ghost.turnTowards(f.gameContext.MainPlayer.GetPosition(), true, f.blockReverse)
 		f.blockReverse = true
 	}
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
@@ -328,6 +336,7 @@ func InitFleeing(ghost *Ghost, ctx *contexts.GameContext) *Fleeing {
 		recentlyChangedDirection: false,
 	}
 	fleeing.transitions[constants.StartFlickering] = constants.FlickeringState
+	fleeing.transitions[constants.EatGhost] = constants.EatenState
 	fleeing.transitions[constants.PowerPelletEaten] = constants.FleeingState
 	return &fleeing
 }
@@ -357,18 +366,19 @@ func (f *Flickering) ApplyTransition(event constants.StateEvent) interfaces.Ghos
 }
 
 // AttemptEatPacman given the current state
-func (f *Flickering) AttemptEatPacman(obj interfaces.MovableGameObject) {
+func (f *Flickering) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 	pacman, ok := obj.(*Pacman)
 	if !ok {
-		return
+		return false
 	}
-	pacman.EatGhost(f.ghost)
+	pacman.EatGhost(f.ghost, f.gameContext)
+	return false
 }
 
 // Run main logic of state
 func (f *Flickering) Run() {
 	if !f.recentlyChangedDirection {
-		f.ghost.attemptChangeDirection(f.gameContext.MainPlayer.GetPosition(), true, true)
+		f.ghost.turnTowards(f.gameContext.MainPlayer.GetPosition(), true, true)
 	}
 	f.recentlyChangedDirection = f.ghost.direction != f.prevDirection
 	if !f.recentlyChangedDirection {
@@ -409,6 +419,87 @@ func InitFlickering(ghost *Ghost, ctx *contexts.GameContext) *Flickering {
 		recentlyChangedDirection: false,
 	}
 	flickering.transitions[constants.PowerPelletWearOff] = constants.ScatterState
+	flickering.transitions[constants.EatGhost] = constants.EatenState
 	flickering.transitions[constants.PowerPelletEaten] = constants.FleeingState
 	return &flickering
+}
+
+//----------------------------------------------------------------------------//
+//----------------------------------EATEN-------------------------------------//
+//----------------------------------------------------------------------------//
+
+// Eaten state of a ghost
+type Eaten struct {
+	ghost         *Ghost
+	gameContext   *contexts.GameContext
+	transitions   map[constants.StateEvent]constants.GhostState
+	prevDirection constants.Direction
+	audioEffect   *modules.InfiniteAudio
+}
+
+// ApplyTransition given an event
+func (e *Eaten) ApplyTransition(event constants.StateEvent) interfaces.GhostState {
+	state, found := e.transitions[event]
+	if !found {
+		return e
+	}
+
+	e.audioEffect.Stop()
+	return getGhostStateInstance(state, e.ghost, e.gameContext)
+}
+
+// AttemptEatPacman given the current state
+func (e *Eaten) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
+	return false
+}
+
+// Run main logic of state
+func (e *Eaten) Run() {
+	e.ghost.turnTowards(e.gameContext.GhostBase, false, true)
+	target := e.ghost.collisionDetector.DetectCollision()
+	switch obj := target.(type) {
+	case *Wall:
+		e.ghost.direction = pickRandomDirection()
+	case *Pacman:
+		e.AttemptEatPacman(obj)
+		e.gameContext.Maze.MoveElement(e.ghost, false)
+		e.ghost.advanceSprites()
+	default:
+		e.gameContext.Maze.MoveElement(e.ghost, false)
+		e.ghost.advanceSprites()
+	}
+	e.prevDirection = e.ghost.direction
+	if e.ghost.position.DistanceTo(e.gameContext.GhostBase) < 1 {
+		e.ghost.ChangeState(constants.ReachBase)
+	}
+}
+
+// GetSprite corresponding to state
+func (e *Eaten) GetSprite() *ebiten.Image {
+	switch e.ghost.direction {
+	case constants.DirUp:
+		return e.ghost.sprites["eaten-up"].GetCurrentFrame()
+	case constants.DirDown:
+		return e.ghost.sprites["eaten-down"].GetCurrentFrame()
+	case constants.DirLeft:
+		return e.ghost.sprites["eaten-left"].GetCurrentFrame()
+	case constants.DirRight:
+		return e.ghost.sprites["eaten-right"].GetCurrentFrame()
+	default:
+		return e.ghost.sprites["eaten-left"].GetCurrentFrame()
+	}
+}
+
+// InitEaten state instance
+func InitEaten(ghost *Ghost, ctx *contexts.GameContext) *Eaten {
+	ghost.speed = constants.EatenGhostFPS
+	eaten := Eaten{
+		ghost:         ghost,
+		gameContext:   ctx,
+		transitions:   make(map[constants.StateEvent]constants.GhostState),
+		prevDirection: ghost.direction,
+		audioEffect:   ctx.SoundPlayer.PlayOnLoop(constants.Retreating),
+	}
+	eaten.transitions[constants.ReachBase] = constants.ScatterState
+	return &eaten
 }
