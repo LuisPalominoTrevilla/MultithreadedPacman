@@ -28,7 +28,7 @@ type Game struct{}
 // Update game logic
 func (g *Game) Update() error {
 	if gameController.State() == constants.InactiveState {
-		go gameController.InitGame()
+		gameController.InitGame()
 	}
 	return nil
 }

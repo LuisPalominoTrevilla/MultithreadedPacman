@@ -19,6 +19,8 @@ func getPacmanStateInstance(
 		return InitWalking(pacman, ctx)
 	case constants.PowerState:
 		return InitPower(pacman, ctx)
+	case constants.DeadState:
+		return InitDead(pacman, ctx)
 	default:
 		return nil
 	}
@@ -71,7 +73,7 @@ targetsLoop:
 			}
 		}
 	}
-	w.pacman.sprites.Advance()
+	w.pacman.sprites["alive"].Advance()
 	w.ctx.Maze.MoveElement(w.pacman)
 }
 
@@ -86,7 +88,7 @@ func (w *Walking) Run() {
 
 // GetSprite corresponding to state
 func (w *Walking) GetSprite() *ebiten.Image {
-	return w.pacman.sprites.GetCurrentFrame()
+	return w.pacman.sprites["alive"].GetCurrentFrame()
 }
 
 // InitWalking state instance
@@ -99,6 +101,7 @@ func InitWalking(pacman *Pacman, ctx *contexts.GameContext) *Walking {
 		prevDirection: pacman.direction,
 	}
 	walking.transitions[constants.PowerPelletEaten] = constants.PowerState
+	walking.transitions[constants.PacManEaten] = constants.DeadState
 	return &walking
 }
 
@@ -150,7 +153,7 @@ targetsLoop:
 			}
 		}
 	}
-	p.pacman.sprites.Advance()
+	p.pacman.sprites["alive"].Advance()
 	p.ctx.Maze.MoveElement(p.pacman)
 }
 
@@ -170,7 +173,7 @@ func (p *Power) Run() {
 
 // GetSprite corresponding to state
 func (p *Power) GetSprite() *ebiten.Image {
-	return p.pacman.sprites.GetCurrentFrame()
+	return p.pacman.sprites["alive"].GetCurrentFrame()
 }
 
 // InitPower state instance
@@ -185,5 +188,51 @@ func InitPower(pacman *Pacman, ctx *contexts.GameContext) *Power {
 	}
 	power.transitions[constants.PowerPelletEaten] = constants.PowerState
 	power.transitions[constants.PowerPelletWearOff] = constants.WalkingState
+	power.transitions[constants.PacManEaten] = constants.DeadState
 	return &power
+}
+
+//----------------------------------------------------------------------------//
+//-----------------------------------DEAD-------------------------------------//
+//----------------------------------------------------------------------------//
+
+// Dead state of the player
+type Dead struct {
+	pacman            *Pacman
+	finishedAnimation bool
+	ctx               *contexts.GameContext
+}
+
+// ApplyTransition given an event
+func (w *Dead) ApplyTransition(event constants.StateEvent) interfaces.PacmanState {
+	return w
+}
+
+// Run main logic of state
+func (w *Dead) Run() {
+	if !w.finishedAnimation {
+		w.finishedAnimation = w.pacman.sprites["dead"].Advance()
+	} else {
+		w.ctx.Maze.RemoveElement(w.pacman)
+		w.pacman.keepRunning = false
+	}
+}
+
+// GetSprite corresponding to state
+func (w *Dead) GetSprite() *ebiten.Image {
+	if w.finishedAnimation {
+		return nil
+	}
+	return w.pacman.sprites["dead"].GetCurrentFrame()
+}
+
+// InitDead state instance
+func InitDead(pacman *Pacman, ctx *contexts.GameContext) *Dead {
+	ctx.SoundPlayer.PlayOnce(constants.DyingEffect)
+	ctx.Msg.GameOver <- struct{}{}
+	return &Dead{
+		finishedAnimation: false,
+		pacman:            pacman,
+		ctx:               ctx,
+	}
 }

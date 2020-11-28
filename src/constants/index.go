@@ -66,6 +66,7 @@ const (
 	PowerPellet
 	EatGhostEffect
 	Retreating
+	DyingEffect
 )
 
 // AudioFiles for each sound effect
@@ -79,6 +80,7 @@ var AudioFiles = map[SoundEffect][]string{
 	PowerPellet:      {"assets/audio/power_pellet.wav"},
 	EatGhostEffect:   {"assets/audio/eat_ghost.wav"},
 	Retreating:       {"assets/audio/retreating.wav"},
+	DyingEffect:      {"assets/audio/death.wav"},
 }
 
 // GhostType represents a type of ghost
@@ -104,15 +106,19 @@ type StateEvent int
 // PowerPelletWearOff - Whenever PacMan's power pellet wears off
 // StartFlickering - A ghost will get imune to the pellet soon
 // GhostEaten - Whenever pacman eats a ghost
-// ReachBase = Whenever a ghost reaches base after retreating
+// ReachBase - Whenever a ghost reaches base after retreating
+// PacManEaten - Whenever a ghost eats a pacman
+// GameOver - Whenever the game has finished
 const (
 	Scatter StateEvent = iota
 	ChasePacman
 	PowerPelletEaten
 	PowerPelletWearOff
 	StartFlickering
-	EatGhost
+	GhostEaten
 	ReachBase
+	PacManEaten
+	GameOver
 )
 
 // GhostState represents a ghost state
@@ -124,6 +130,7 @@ type GhostState int
 // FleeingState - Fleeing PacMan
 // FlickeringState - Still fleeing PacMan but about to stop
 // EatenState - When the Ghost was just eaten by PacMan
+// EndState - Whenever PacMan dies or wins
 const (
 	IdleState GhostState = iota
 	ScatterState
@@ -131,16 +138,19 @@ const (
 	FleeingState
 	FlickeringState
 	EatenState
+	EndState
 )
 
 // PacmanState represents a ghost state
 type PacmanState int
 
-// WalkingState - Normal pacman behavior
-// PowerState - Pacman behavior with power pellet
+// WalkingState - Normal PacMan behavior
+// PowerState - PacMan behavior with power pellet
+// DeadState - PacMan was eaten
 const (
 	WalkingState PacmanState = iota
 	PowerState
+	DeadState
 )
 
 // Direction expresses a direction

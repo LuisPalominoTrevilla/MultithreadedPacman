@@ -152,6 +152,11 @@ func (l *Level) Run(nextScreen chan constants.GameState) {
 			}
 		case <-l.ctx.Msg.PowerPelletWoreOff:
 			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], true)
+		case <-l.ctx.Msg.GameOver:
+			l.backgroundSound.Stop()
+			for _, enemy := range l.enemies {
+				enemy.ChangeState(constants.GameOver)
+			}
 		}
 	}
 }
@@ -180,6 +185,7 @@ func NewLevel(levelFile string, numEnemies int) (*Level, error) {
 				EatPellet:          make(chan bool),
 				PhaseChange:        make(chan int),
 				PowerPelletWoreOff: make(chan struct{}),
+				GameOver:           make(chan struct{}),
 			},
 		},
 	}

@@ -5,4 +5,5 @@ type MessageBroker struct {
 	EatPellet          chan bool
 	PowerPelletWoreOff chan struct{}
 	PhaseChange        chan int
+	GameOver           chan struct{}
 }

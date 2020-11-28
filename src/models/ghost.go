@@ -16,6 +16,7 @@ import (
 
 // Ghost represents the main enemy
 type Ghost struct {
+	isAlive           bool
 	state             interfaces.GhostState
 	kind              constants.GhostType
 	layerIndex        int
@@ -120,7 +121,7 @@ func (g *Ghost) Run(ctx *contexts.GameContext) {
 	}
 
 	g.state = InitIdle(g, ctx)
-	for {
+	for g.isAlive {
 		ctx.MazeMutex.Lock()
 		g.state.Run()
 		ctx.MazeMutex.Unlock()
@@ -180,6 +181,7 @@ func (g *Ghost) AttachCollisionDetector(collisionDetector *modules.CollisionDete
 // InitGhost enemy for the level
 func InitGhost(x, y int, idleStateTime float64, ghostType constants.GhostType) (*Ghost, error) {
 	ghost := Ghost{
+		isAlive:       true,
 		layerIndex:    constants.GhostLayerIdx,
 		kind:          ghostType,
 		phase:         0,

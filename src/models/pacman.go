@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -14,12 +15,13 @@ import (
 
 // Pacman represents the player
 type Pacman struct {
+	keepRunning       bool
 	state             interfaces.PacmanState
 	position          interfaces.Location
 	speed             int
 	keyDirection      constants.Direction
 	direction         constants.Direction
-	sprites           *structures.SpriteSequence
+	sprites           map[string]*structures.SpriteSequence
 	animator          *modules.Animator
 	collisionDetector *modules.CollisionDetector
 }
@@ -60,7 +62,7 @@ func (p *Pacman) ChangeState(event constants.StateEvent) {
 // EatGhost and send it back to hell
 func (p *Pacman) EatGhost(g *Ghost, ctx *contexts.GameContext) {
 	ctx.SoundPlayer.PlayOnce(constants.EatGhostEffect)
-	g.ChangeState(constants.EatGhost)
+	g.ChangeState(constants.GhostEaten)
 }
 
 // Run the behavior of the player
@@ -71,7 +73,7 @@ func (p *Pacman) Run(ctx *contexts.GameContext) {
 
 	p.state = InitWalking(p, ctx)
 	go p.keyListener()
-	for {
+	for p.keepRunning {
 		ctx.MazeMutex.Lock()
 		p.state.Run()
 		ctx.MazeMutex.Unlock()
@@ -87,7 +89,7 @@ func (p *Pacman) Draw(screen *ebiten.Image, x, y int) {
 // GetSprite of the element
 func (p *Pacman) GetSprite() *ebiten.Image {
 	if p.state == nil {
-		return p.sprites.GetCurrentFrame()
+		return p.sprites["alive"].GetCurrentFrame()
 	}
 	return p.state.GetSprite()
 }
@@ -131,19 +133,35 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
 	pacman := Pacman{
+		keepRunning:  true,
 		position:     structures.InitPosition(x, y),
 		speed:        constants.DefaultPacmanFPS,
 		direction:    constants.DirLeft,
 		keyDirection: constants.DirLeft,
+		sprites:      make(map[string]*structures.SpriteSequence),
 	}
-	sprites := []string{
+	aliveSprites := []string{
 		"assets/pacman/pacman-1.png",
 		"assets/pacman/pacman-2.png",
 		"assets/pacman/pacman-3.png",
 		"assets/pacman/pacman-2.png",
 	}
-	seq, err := structures.InitSpriteSequence(sprites)
-	pacman.sprites = seq
+	deathSprites := make([]string, 11)
+	for i := 0; i < 11; i++ {
+		deathSprites[i] = fmt.Sprintf("assets/pacman/death-%d.png", i+1)
+	}
+
+	seq, err := structures.InitSpriteSequence(aliveSprites)
+	if err != nil {
+		return nil, err
+	}
+	pacman.sprites["alive"] = seq
+	seq, err = structures.InitSpriteSequence(deathSprites)
+	if err != nil {
+		return nil, err
+	}
+	pacman.sprites["dead"] = seq
+
 	pacman.animator = modules.InitAnimator(&pacman)
-	return &pacman, err
+	return &pacman, nil
 }

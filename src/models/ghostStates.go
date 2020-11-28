@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -29,6 +28,8 @@ func getGhostStateInstance(
 		return InitFlickering(ghost, ctx)
 	case constants.EatenState:
 		return InitEaten(ghost, ctx)
+	case constants.EndState:
+		return InitEnd(ghost, ctx)
 	default:
 		return nil
 	}
@@ -83,6 +84,7 @@ func InitIdle(ghost *Ghost, ctx *contexts.GameContext) *Idle {
 		createdAt:   time.Now(),
 	}
 	idle.transitions[constants.Scatter] = constants.ScatterState
+	idle.transitions[constants.GameOver] = constants.EndState
 	return &idle
 }
 
@@ -112,13 +114,12 @@ func (s *Scatter) ApplyTransition(event constants.StateEvent) interfaces.GhostSt
 
 // AttemptEatPacman given the current state
 func (s *Scatter) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
-	_, ok := obj.(*Pacman)
+	pacman, ok := obj.(*Pacman)
 	if !ok {
 		return false
 	}
 
-	fmt.Println("Pacman dead")
-	// TODO: Change pacman state to eaten
+	pacman.ChangeState(constants.PacManEaten)
 	return true
 }
 
@@ -171,6 +172,7 @@ func InitScatter(ghost *Ghost, ctx *contexts.GameContext) *Scatter {
 	}
 	scatter.transitions[constants.ChasePacman] = constants.ChaseState
 	scatter.transitions[constants.PowerPelletEaten] = constants.FleeingState
+	scatter.transitions[constants.GameOver] = constants.EndState
 	return &scatter
 }
 
@@ -200,13 +202,12 @@ func (c *Chase) ApplyTransition(event constants.StateEvent) interfaces.GhostStat
 
 // AttemptEatPacman given the current state
 func (c *Chase) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
-	_, ok := obj.(*Pacman)
+	pacman, ok := obj.(*Pacman)
 	if !ok {
 		return false
 	}
 
-	fmt.Println("Pacman dead")
-	// TODO: Change pacman state to eaten
+	pacman.ChangeState(constants.PacManEaten)
 	return true
 }
 
@@ -262,6 +263,7 @@ func InitChase(ghost *Ghost, ctx *contexts.GameContext) *Chase {
 	}
 	chase.transitions[constants.Scatter] = constants.ScatterState
 	chase.transitions[constants.PowerPelletEaten] = constants.FleeingState
+	chase.transitions[constants.GameOver] = constants.EndState
 	return &chase
 }
 
@@ -351,8 +353,9 @@ func InitFleeing(ghost *Ghost, ctx *contexts.GameContext) *Fleeing {
 		recentlyChangedDirection: false,
 	}
 	fleeing.transitions[constants.StartFlickering] = constants.FlickeringState
-	fleeing.transitions[constants.EatGhost] = constants.EatenState
+	fleeing.transitions[constants.GhostEaten] = constants.EatenState
 	fleeing.transitions[constants.PowerPelletEaten] = constants.FleeingState
+	fleeing.transitions[constants.GameOver] = constants.EndState
 	return &fleeing
 }
 
@@ -439,8 +442,9 @@ func InitFlickering(ghost *Ghost, ctx *contexts.GameContext) *Flickering {
 		recentlyChangedDirection: false,
 	}
 	flickering.transitions[constants.PowerPelletWearOff] = constants.ScatterState
-	flickering.transitions[constants.EatGhost] = constants.EatenState
+	flickering.transitions[constants.GhostEaten] = constants.EatenState
 	flickering.transitions[constants.PowerPelletEaten] = constants.FleeingState
+	flickering.transitions[constants.GameOver] = constants.EndState
 	return &flickering
 }
 
@@ -524,5 +528,38 @@ func InitEaten(ghost *Ghost, ctx *contexts.GameContext) *Eaten {
 		audioEffect:   ctx.SoundPlayer.PlayOnLoop(constants.Retreating),
 	}
 	eaten.transitions[constants.ReachBase] = constants.ScatterState
+	eaten.transitions[constants.GameOver] = constants.EndState
 	return &eaten
+}
+
+//----------------------------------------------------------------------------//
+//-----------------------------------END--------------------------------------//
+//----------------------------------------------------------------------------//
+
+// End state of a ghost
+type End struct{}
+
+// ApplyTransition given an event
+func (e *End) ApplyTransition(event constants.StateEvent) interfaces.GhostState {
+	return e
+}
+
+// AttemptEatPacman given the current state
+func (e *End) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
+	return false
+}
+
+// Run main logic of state
+func (e *End) Run() {}
+
+// GetSprite corresponding to state
+func (e *End) GetSprite() *ebiten.Image {
+	return nil
+}
+
+// InitEnd state instance
+func InitEnd(ghost *Ghost, ctx *contexts.GameContext) *End {
+	ghost.isAlive = false
+	ctx.Maze.RemoveElement(ghost)
+	return &End{}
 }

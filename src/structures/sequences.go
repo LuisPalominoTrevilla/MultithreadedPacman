@@ -11,9 +11,11 @@ type SpriteSequence struct {
 	frames  []*ebiten.Image
 }
 
-// Advance current frame
-func (s *SpriteSequence) Advance() {
+// Advance current frame and indicate whether it was the last frame
+func (s *SpriteSequence) Advance() bool {
+	isLast := s.current+1 == len(s.frames)
 	s.current = (s.current + 1) % len(s.frames)
+	return isLast
 }
 
 // GetCurrentFrame to be used by an animator

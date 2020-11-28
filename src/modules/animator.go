@@ -17,6 +17,10 @@ type Animator struct {
 func (a *Animator) DrawFrame(screen *ebiten.Image, x, y int) {
 	op := &ebiten.DrawImageOptions{}
 	frame := a.object.GetSprite()
+	if frame == nil {
+		return
+	}
+
 	width, height := frame.Size()
 	op.GeoM.Scale(constants.TileSize/float64(width), constants.TileSize/float64(height))
 	if a.object.IsMatrixEditable() {
