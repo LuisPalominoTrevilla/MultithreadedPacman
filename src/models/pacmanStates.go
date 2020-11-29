@@ -21,6 +21,8 @@ func getPacmanStateInstance(
 		return InitPower(pacman, ctx)
 	case constants.DeadState:
 		return InitDead(pacman, ctx)
+	case constants.WinState:
+		return InitWin(pacman, ctx)
 	default:
 		return nil
 	}
@@ -97,6 +99,7 @@ func InitWalking(pacman *Pacman, ctx *contexts.GameContext) *Walking {
 	}
 	walking.transitions[constants.PowerPelletEaten] = constants.PowerState
 	walking.transitions[constants.PacManEaten] = constants.DeadState
+	walking.transitions[constants.AllPelletsEaten] = constants.WinState
 	return &walking
 }
 
@@ -179,6 +182,7 @@ func InitPower(pacman *Pacman, ctx *contexts.GameContext) *Power {
 	power.transitions[constants.PowerPelletEaten] = constants.PowerState
 	power.transitions[constants.PowerPelletWearOff] = constants.WalkingState
 	power.transitions[constants.PacManEaten] = constants.DeadState
+	power.transitions[constants.AllPelletsEaten] = constants.WinState
 	return &power
 }
 
@@ -224,5 +228,42 @@ func InitDead(pacman *Pacman, ctx *contexts.GameContext) *Dead {
 		finishedAnimation: false,
 		pacman:            pacman,
 		ctx:               ctx,
+	}
+}
+
+//----------------------------------------------------------------------------//
+//-----------------------------------WIN--------------------------------------//
+//----------------------------------------------------------------------------//
+
+// Win state of the player
+type Win struct {
+	pacman *Pacman
+}
+
+// ApplyTransition given an event
+func (w *Win) ApplyTransition(event constants.StateEvent) interfaces.PacmanState {
+	return w
+}
+
+// Run main logic of state
+func (w *Win) Run() {}
+
+// GetSprite corresponding to state
+func (w *Win) GetSprite() *ebiten.Image {
+	return w.pacman.sprites["alive"].GetCurrentFrame()
+}
+
+// InitWin state instance
+func InitWin(pacman *Pacman, ctx *contexts.GameContext) *Win {
+	pacman.keepRunning = false
+	go func(pacman *Pacman, ctx *contexts.GameContext) {
+		ctx.Msg.GameOver <- struct{}{}
+		wait := make(chan struct{})
+		ctx.SoundPlayer.PlayOnceAndNotify(constants.LevelWon, wait)
+		<-wait
+		ctx.Maze.RemoveElement(pacman)
+	}(pacman, ctx)
+	return &Win{
+		pacman: pacman,
 	}
 }

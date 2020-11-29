@@ -17,11 +17,12 @@ import (
 
 // Level represents a level with all of its contents
 type Level struct {
-	phase           int
-	ctx             *contexts.GameContext
-	player          *models.Pacman
-	enemies         []*models.Ghost
-	backgroundSound *modules.InfiniteAudio
+	pelletsRemaining uint
+	phase            int
+	ctx              *contexts.GameContext
+	player           *models.Pacman
+	enemies          []*models.Ghost
+	backgroundSound  *modules.InfiniteAudio
 }
 
 func (l *Level) parseLevel(file string, numEnemies int) error {
@@ -96,6 +97,7 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					l.ctx.Maze.AddElement(row, col, l.enemies[i])
 				}
 			case '.', '@':
+				l.pelletsRemaining++
 				pellet, err := models.InitPellet(col, row, elem == '@')
 				if err != nil {
 					return err
@@ -143,7 +145,11 @@ func (l *Level) Run(nextScreen chan constants.GameState) {
 				l.phase = newPhase
 			}
 		case isPowerful := <-l.ctx.Msg.EatPellet:
-			// TODO: increment counter and check for end game
+			l.pelletsRemaining--
+			if l.pelletsRemaining == 0 {
+				l.player.ChangeState(constants.AllPelletsEaten)
+				break
+			}
 			if isPowerful {
 				l.backgroundSound.Replace(constants.PowerPellet, true)
 				for _, enemy := range l.enemies {
@@ -177,7 +183,6 @@ func NewLevel(levelFile string, numEnemies int) (*Level, error) {
 		return nil, errors.New(errMsg)
 	}
 	l := Level{
-		phase:   0,
 		enemies: make([]*models.Ghost, 0, numEnemies),
 		ctx: &contexts.GameContext{
 			GhostBases: make(map[constants.GhostType]interfaces.Location),
