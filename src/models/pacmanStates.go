@@ -60,12 +60,7 @@ targetsLoop:
 			}
 			return
 		case *Pellet:
-			w.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
-			w.ctx.Maze.RemoveElement(obj)
-			w.ctx.Msg.EatPellet <- obj.isPowerful
-			if obj.isPowerful {
-				w.pacman.ChangeState(constants.PowerPelletEaten)
-			}
+			w.pacman.EatPellet(obj, w.ctx)
 		case *Ghost:
 			if obj.AttemptEatPacman(w.pacman) {
 				// Stop processing more targets if PacMan died
@@ -140,12 +135,7 @@ targetsLoop:
 			}
 			return
 		case *Pellet:
-			p.ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
-			p.ctx.Maze.RemoveElement(obj)
-			p.ctx.Msg.EatPellet <- obj.isPowerful
-			if obj.isPowerful {
-				p.pacman.ChangeState(constants.PowerPelletEaten)
-			}
+			p.pacman.EatPellet(obj, p.ctx)
 		case *Ghost:
 			if obj.AttemptEatPacman(p.pacman) {
 				// Stop processing more targets if PacMan died

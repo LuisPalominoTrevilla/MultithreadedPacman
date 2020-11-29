@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -15,6 +16,8 @@ import (
 
 // Pacman represents the player
 type Pacman struct {
+	score             uint
+	scoreMutex        sync.Mutex
 	keepRunning       bool
 	state             interfaces.PacmanState
 	position          interfaces.Location
@@ -59,8 +62,26 @@ func (p *Pacman) ChangeState(event constants.StateEvent) {
 	}
 }
 
+// EatPellet and perform logic
+func (p *Pacman) EatPellet(pellet *Pellet, ctx *contexts.GameContext) {
+	ctx.SoundPlayer.PlayOnce(constants.MunchEffect)
+	ctx.Maze.RemoveElement(pellet)
+	ctx.Msg.EatPellet <- pellet.isPowerful
+	p.scoreMutex.Lock()
+	if pellet.isPowerful {
+		p.ChangeState(constants.PowerPelletEaten)
+		p.score += 50
+	} else {
+		p.score += 10
+	}
+	p.scoreMutex.Unlock()
+}
+
 // EatGhost and send it back to hell
 func (p *Pacman) EatGhost(g *Ghost, ctx *contexts.GameContext) {
+	p.scoreMutex.Lock()
+	p.score += 200
+	p.scoreMutex.Unlock()
 	ctx.SoundPlayer.PlayOnce(constants.EatGhostEffect)
 	g.ChangeState(constants.GhostEaten)
 }
@@ -133,6 +154,7 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 // InitPacman player for the level
 func InitPacman(x, y int) (*Pacman, error) {
 	pacman := Pacman{
+		score:        0,
 		keepRunning:  true,
 		position:     structures.InitPosition(x, y),
 		speed:        constants.DefaultPacmanFPS,
