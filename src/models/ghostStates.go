@@ -441,7 +441,7 @@ func InitFlickering(ghost *Ghost, ctx *contexts.GameContext) *Flickering {
 		prevDirection:            ghost.direction,
 		recentlyChangedDirection: false,
 	}
-	flickering.transitions[constants.PowerPelletWearOff] = constants.ScatterState
+	flickering.transitions[constants.PowerPelletWearOff] = constants.ChaseState
 	flickering.transitions[constants.GhostEaten] = constants.EatenState
 	flickering.transitions[constants.PowerPelletEaten] = constants.FleeingState
 	flickering.transitions[constants.GameOver] = constants.EndState
