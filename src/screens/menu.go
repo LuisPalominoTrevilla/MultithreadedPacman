@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
@@ -17,16 +18,17 @@ import (
 type Menu struct {
 	w           int
 	h           int
+	anchorCtx   *contexts.AnchorContext
 	font        font.Face
 	keepRunning bool
 }
 
 // Run menu key listener
-func (m *Menu) Run(nextScreen chan constants.GameState) {
+func (m *Menu) Run() {
 	for m.keepRunning {
 		if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 			m.keepRunning = false
-			nextScreen <- constants.PlayState
+			m.anchorCtx.ChangeState <- constants.PlayState
 		}
 		time.Sleep(time.Duration(10) * time.Millisecond)
 	}
@@ -42,7 +44,7 @@ func (m *Menu) Draw(screen *ebiten.Image) {
 }
 
 // NewMenu screen
-func NewMenu(w, h int) *Menu {
+func NewMenu(w, h int, anchorCtx *contexts.AnchorContext) *Menu {
 	tt, err := truetype.Parse(fonts.PressStart2P_ttf)
 	if err != nil {
 		log.Fatal(err)
@@ -55,6 +57,7 @@ func NewMenu(w, h int) *Menu {
 	return &Menu{
 		w:           w,
 		h:           h,
+		anchorCtx:   anchorCtx,
 		font:        fontFace,
 		keepRunning: true,
 	}

@@ -2,8 +2,6 @@ package screens
 
 import (
 	"bufio"
-	"errors"
-	"fmt"
 	"os"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
@@ -19,6 +17,7 @@ import (
 type Level struct {
 	pelletsRemaining uint
 	phase            int
+	anchorCtx        *contexts.AnchorContext
 	ctx              *contexts.GameContext
 	player           *models.Pacman
 	enemies          []*models.Ghost
@@ -51,22 +50,13 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 					l.ctx.GhostBases[ghostType] = structures.InitPosition(col, row)
 				}
 
-				wall, err := models.InitWall(col, row)
-				if err != nil {
-					return err
-				}
+				wall := models.InitWall(col, row, l.anchorCtx.AssetManager)
 				l.ctx.Maze.AddElement(row, col, wall)
 			case '|':
-				bars, err := models.InitBars(col, row)
-				if err != nil {
-					return err
-				}
+				bars := models.InitBars(col, row, l.anchorCtx.AssetManager)
 				l.ctx.Maze.AddElement(row, col, bars)
 			case 'S':
-				player, err := models.InitPacman(col, row)
-				if err != nil {
-					return err
-				}
+				player := models.InitPacman(col, row, l.anchorCtx.AssetManager)
 				player.AttachCollisionDetector(modules.InitCollisionDetector(player, l.ctx.Maze))
 				l.ctx.MainPlayer = player
 				l.player = player
@@ -98,10 +88,7 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 				}
 			case '.', '@':
 				l.pelletsRemaining++
-				pellet, err := models.InitPellet(col, row, elem == '@')
-				if err != nil {
-					return err
-				}
+				pellet := models.InitPellet(col, row, elem == '@', l.anchorCtx.AssetManager)
 				l.ctx.Maze.AddElement(row, col, pellet)
 			}
 		}
@@ -114,13 +101,8 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 	return nil
 }
 
-// Size of the level
-func (l *Level) Size() (width, height int) {
-	return l.ctx.Maze.Dimensions()
-}
-
 // Run logic of the level
-func (l *Level) Run(nextScreen chan constants.GameState) {
+func (l *Level) Run() {
 	// TODO: Uncomment lines to play initial sound of level
 	// wait := make(chan struct{})
 	// l.ctx.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
@@ -174,16 +156,10 @@ func (l *Level) Draw(screen *ebiten.Image) {
 }
 
 // NewLevel given a valid level file
-func NewLevel(levelFile string, numEnemies int) (*Level, error) {
-	if numEnemies <= 0 {
-		return nil, errors.New("At least one enemy must be spawned")
-	}
-	if numEnemies > constants.MaxGhostsAllowed {
-		errMsg := fmt.Sprintf("Cannot instantiate more than %d enemies", constants.MaxGhostsAllowed)
-		return nil, errors.New(errMsg)
-	}
+func NewLevel(levelFile string, numEnemies int, anchorCtx *contexts.AnchorContext) (*Level, error) {
 	l := Level{
-		enemies: make([]*models.Ghost, 0, numEnemies),
+		enemies:   make([]*models.Ghost, 0, numEnemies),
+		anchorCtx: anchorCtx,
 		ctx: &contexts.GameContext{
 			GhostBases: make(map[constants.GhostType]interfaces.Location),
 			Msg: &structures.MessageBroker{

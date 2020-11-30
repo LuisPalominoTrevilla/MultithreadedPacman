@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -16,6 +15,6 @@ type Location interface {
 
 // Screen represents any game screen
 type Screen interface {
-	Run(nextScreen chan constants.GameState)
+	Run()
 	Draw(screen *ebiten.Image)
 }

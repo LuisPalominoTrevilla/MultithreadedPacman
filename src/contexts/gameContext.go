@@ -19,3 +19,9 @@ type GameContext struct {
 	SoundPlayer *modules.SoundPlayer
 	Msg         *structures.MessageBroker
 }
+
+// AnchorContext represents the game context shared among screens
+type AnchorContext struct {
+	ChangeState  chan constants.GameState
+	AssetManager *modules.AssetManager
+}

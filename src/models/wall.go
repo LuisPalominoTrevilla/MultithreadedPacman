@@ -6,7 +6,6 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // Wall represents a wall
@@ -52,12 +51,11 @@ func (w *Wall) GetPosition() interfaces.Location {
 }
 
 // InitWall of the maze
-func InitWall(x, y int) (*Wall, error) {
+func InitWall(x, y int, assetManager *modules.AssetManager) *Wall {
 	wall := Wall{
 		position: structures.InitPosition(x, y),
 	}
-	img, _, err := ebitenutil.NewImageFromFile("assets/wall.png")
-	wall.sprite = img
+	wall.sprite = assetManager.WallSprite
 	wall.animator = modules.InitAnimator(&wall)
-	return &wall, err
+	return &wall
 }

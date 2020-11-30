@@ -2,6 +2,8 @@ package constants
 
 // Standard constants used in the codebase
 const (
+	HorizontalTiles    = 27
+	VerticalTiles      = 23
 	TileSize           = 32
 	MaxGhostsAllowed   = 8
 	InfiniteChasePhase = 3

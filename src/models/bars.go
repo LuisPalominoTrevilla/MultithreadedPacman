@@ -6,7 +6,6 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 // Bars represents bars that only ghosts can go through
@@ -52,12 +51,12 @@ func (w *Bars) GetPosition() interfaces.Location {
 }
 
 // InitBars of the maze
-func InitBars(x, y int) (*Bars, error) {
+func InitBars(x, y int, assetManager *modules.AssetManager) *Bars {
 	bars := Bars{
 		position: structures.InitPosition(x, y),
 	}
-	img, _, err := ebitenutil.NewImageFromFile("assets/bars.png")
-	bars.sprite = img
+
+	bars.sprite = assetManager.BarsSprite
 	bars.animator = modules.InitAnimator(&bars)
-	return &bars, err
+	return &bars
 }

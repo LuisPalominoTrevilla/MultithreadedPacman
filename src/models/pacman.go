@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -152,7 +151,7 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 }
 
 // InitPacman player for the level
-func InitPacman(x, y int) (*Pacman, error) {
+func InitPacman(x, y int, assetManager *modules.AssetManager) *Pacman {
 	pacman := Pacman{
 		score:        0,
 		keepRunning:  true,
@@ -162,28 +161,8 @@ func InitPacman(x, y int) (*Pacman, error) {
 		keyDirection: constants.DirLeft,
 		sprites:      make(map[string]*structures.SpriteSequence),
 	}
-	aliveSprites := []string{
-		"assets/pacman/pacman-1.png",
-		"assets/pacman/pacman-2.png",
-		"assets/pacman/pacman-3.png",
-		"assets/pacman/pacman-2.png",
-	}
-	deathSprites := make([]string, 11)
-	for i := 0; i < 11; i++ {
-		deathSprites[i] = fmt.Sprintf("assets/pacman/death-%d.png", i+1)
-	}
 
-	seq, err := structures.InitSpriteSequence(aliveSprites)
-	if err != nil {
-		return nil, err
-	}
-	pacman.sprites["alive"] = seq
-	seq, err = structures.InitSpriteSequence(deathSprites)
-	if err != nil {
-		return nil, err
-	}
-	pacman.sprites["dead"] = seq
-
+	pacman.sprites = assetManager.PacmanSprites
 	pacman.animator = modules.InitAnimator(&pacman)
-	return &pacman, nil
+	return &pacman
 }

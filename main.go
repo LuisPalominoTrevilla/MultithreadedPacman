@@ -5,7 +5,6 @@ import (
 	_ "image/png"
 	"log"
 
-	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/controller"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -27,7 +26,7 @@ type Game struct{}
 
 // Update game logic
 func (g *Game) Update() error {
-	if gameController.State() == constants.InactiveState {
+	if !gameController.IsActive() {
 		gameController.InitGame()
 	}
 	return nil
