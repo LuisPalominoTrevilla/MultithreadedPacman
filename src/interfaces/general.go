@@ -13,6 +13,11 @@ type Location interface {
 	DistanceTo(Location) float64
 }
 
+// ChaseBehavior of a ghost
+type ChaseBehavior interface {
+	SwitchDirection()
+}
+
 // Screen represents any game screen
 type Screen interface {
 	Run()

@@ -18,6 +18,7 @@ import (
 type Ghost struct {
 	isAlive           bool
 	state             interfaces.GhostState
+	chaseBehavior     interfaces.ChaseBehavior
 	kind              constants.GhostType
 	layerIndex        int
 	phase             int
@@ -54,6 +55,19 @@ func (g *Ghost) orientedSprite() *ebiten.Image {
 		return g.sprites["right"].GetCurrentFrame()
 	default:
 		return g.sprites["left"].GetCurrentFrame()
+	}
+}
+
+func (g *Ghost) attachChaseBehavior(ctx *contexts.GameContext) {
+	switch g.kind {
+	case constants.Blinky:
+		g.chaseBehavior = &BlinkyChaseBehavior{ghost: g, ctx: ctx}
+	case constants.Pinky:
+		g.chaseBehavior = &PinkyChaseBehavior{ghost: g, ctx: ctx}
+	case constants.Inky:
+		g.chaseBehavior = &InkyChaseBehavior{ghost: g, ctx: ctx}
+	case constants.Clyde:
+		g.chaseBehavior = &ClydeChaseBehavior{ghost: g, ctx: ctx}
 	}
 }
 
@@ -101,6 +115,14 @@ func (g *Ghost) turnTowards(target interfaces.Location, runAway, blockReverse bo
 	g.direction = selected
 }
 
+func (g *Ghost) switchDirection() {
+	if g.chaseBehavior == nil {
+		g.turnTowards(nil, false, true)
+	} else {
+		g.chaseBehavior.SwitchDirection()
+	}
+}
+
 // ChangeState given an event
 func (g *Ghost) ChangeState(event constants.StateEvent) {
 	newState := g.state.ApplyTransition(event)
@@ -121,6 +143,7 @@ func (g *Ghost) Run(ctx *contexts.GameContext) {
 	}
 
 	g.state = InitIdle(g, ctx)
+	g.attachChaseBehavior(ctx)
 	for g.isAlive {
 		ctx.MazeMutex.Lock()
 		g.state.Run()

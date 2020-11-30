@@ -214,7 +214,7 @@ func (c *Chase) AttemptEatPacman(obj interfaces.MovableGameObject) bool {
 // Run main logic of state
 func (c *Chase) Run() {
 	if !c.recentlyChangedDirection {
-		c.ghost.turnTowards(c.ctx.MainPlayer.GetPosition(), false, true)
+		c.ghost.switchDirection()
 	}
 	c.recentlyChangedDirection = c.ghost.direction != c.prevDirection
 	if !c.recentlyChangedDirection {
