@@ -119,6 +119,7 @@ func (l *Level) Run() {
 	for _, enemy := range l.enemies {
 		go enemy.Run(l.ctx)
 	}
+MainLoop:
 	for {
 		select {
 		case newPhase := <-l.ctx.Msg.PhaseChange:
@@ -140,11 +141,15 @@ func (l *Level) Run() {
 			}
 		case <-l.ctx.Msg.PowerPelletWoreOff:
 			l.backgroundSound.Replace(sirenSounds[l.phase%len(sirenSounds)], true)
-		case <-l.ctx.Msg.GameOver:
+		case <-l.ctx.Msg.RemoveEnemies:
 			l.backgroundSound.Stop()
 			for _, enemy := range l.enemies {
 				enemy.ChangeState(constants.GameOver)
 			}
+		case <-l.ctx.Msg.EndGame:
+			l.anchorCtx.GameScore = l.player.Score
+			l.anchorCtx.ChangeState <- constants.GameOverState
+			break MainLoop
 		}
 	}
 }
@@ -166,15 +171,12 @@ func NewLevel(levelFile string, numEnemies int, anchorCtx *contexts.AnchorContex
 				EatPellet:          make(chan bool),
 				PhaseChange:        make(chan int),
 				PowerPelletWoreOff: make(chan struct{}),
-				GameOver:           make(chan struct{}),
+				RemoveEnemies:      make(chan struct{}),
+				EndGame:            make(chan struct{}),
 			},
 		},
 	}
-	soundPlayer, err := modules.InitSoundPlayer()
-	if err != nil {
-		return nil, err
-	}
-	l.ctx.SoundPlayer = soundPlayer
-	err = l.parseLevel(levelFile, numEnemies)
+	l.ctx.SoundPlayer = anchorCtx.SoundPlayer
+	err := l.parseLevel(levelFile, numEnemies)
 	return &l, err
 }

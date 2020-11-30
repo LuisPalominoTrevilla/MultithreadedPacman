@@ -43,10 +43,12 @@ type GameState int
 // InactiveState - Inactive game state
 // MenuState - Main menu state
 // PlayState - Playing game state
+// GameOverState - A game has finished
 const (
 	InactiveState GameState = iota
 	MenuState
 	PlayState
+	GameOverState
 )
 
 // SoundEffect represents a type of sound effect
@@ -60,6 +62,7 @@ type SoundEffect int
 // Retreating - Ghost reatreating audio
 // DyingEffect - PacMan dying sound effect
 // LevelWon - Level won sound effect
+// MainTheme - Main menu music
 const (
 	MunchEffect SoundEffect = iota
 	GameStart
@@ -72,6 +75,7 @@ const (
 	Retreating
 	DyingEffect
 	LevelWon
+	MainTheme
 )
 
 // AudioFiles for each sound effect
@@ -87,6 +91,7 @@ var AudioFiles = map[SoundEffect][]string{
 	Retreating:       {"assets/audio/retreating.wav"},
 	DyingEffect:      {"assets/audio/death.wav"},
 	LevelWon:         {"assets/audio/extend.wav"},
+	MainTheme:        {"assets/audio/intermission.wav"},
 }
 
 // GhostType represents a type of ghost

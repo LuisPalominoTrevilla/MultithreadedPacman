@@ -208,6 +208,7 @@ func (w *Dead) Run() {
 		w.finishedAnimation = w.pacman.sprites["dead"].Advance()
 	} else {
 		w.ctx.Maze.RemoveElement(w.pacman)
+		w.ctx.Msg.EndGame <- struct{}{}
 		w.pacman.keepRunning = false
 	}
 }
@@ -223,7 +224,7 @@ func (w *Dead) GetSprite() *ebiten.Image {
 // InitDead state instance
 func InitDead(pacman *Pacman, ctx *contexts.GameContext) *Dead {
 	ctx.SoundPlayer.PlayOnce(constants.DyingEffect)
-	ctx.Msg.GameOver <- struct{}{}
+	ctx.Msg.RemoveEnemies <- struct{}{}
 	return &Dead{
 		finishedAnimation: false,
 		pacman:            pacman,
@@ -257,11 +258,12 @@ func (w *Win) GetSprite() *ebiten.Image {
 func InitWin(pacman *Pacman, ctx *contexts.GameContext) *Win {
 	pacman.keepRunning = false
 	go func(pacman *Pacman, ctx *contexts.GameContext) {
-		ctx.Msg.GameOver <- struct{}{}
+		ctx.Msg.RemoveEnemies <- struct{}{}
 		wait := make(chan struct{})
 		ctx.SoundPlayer.PlayOnceAndNotify(constants.LevelWon, wait)
 		<-wait
 		ctx.Maze.RemoveElement(pacman)
+		ctx.Msg.EndGame <- struct{}{}
 	}(pacman, ctx)
 	return &Win{
 		pacman: pacman,

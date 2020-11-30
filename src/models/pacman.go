@@ -15,7 +15,7 @@ import (
 
 // Pacman represents the player
 type Pacman struct {
-	score             uint
+	Score             uint
 	scoreMutex        sync.Mutex
 	keepRunning       bool
 	state             interfaces.PacmanState
@@ -69,9 +69,9 @@ func (p *Pacman) EatPellet(pellet *Pellet, ctx *contexts.GameContext) {
 	p.scoreMutex.Lock()
 	if pellet.isPowerful {
 		p.ChangeState(constants.PowerPelletEaten)
-		p.score += 50
+		p.Score += 50
 	} else {
-		p.score += 10
+		p.Score += 10
 	}
 	p.scoreMutex.Unlock()
 }
@@ -79,7 +79,7 @@ func (p *Pacman) EatPellet(pellet *Pellet, ctx *contexts.GameContext) {
 // EatGhost and send it back to hell
 func (p *Pacman) EatGhost(g *Ghost, ctx *contexts.GameContext) {
 	p.scoreMutex.Lock()
-	p.score += 200
+	p.Score += 200
 	p.scoreMutex.Unlock()
 	ctx.SoundPlayer.PlayOnce(constants.EatGhostEffect)
 	g.ChangeState(constants.GhostEaten)
@@ -153,7 +153,7 @@ func (p *Pacman) AttachCollisionDetector(collisionDetector *modules.CollisionDet
 // InitPacman player for the level
 func InitPacman(x, y int, assetManager *modules.AssetManager) *Pacman {
 	pacman := Pacman{
-		score:        0,
+		Score:        0,
 		keepRunning:  true,
 		position:     structures.InitPosition(x, y),
 		speed:        constants.DefaultPacmanFPS,

@@ -10,7 +10,10 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/screens"
+	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
+	"golang.org/x/image/font"
 )
 
 // GameController represents the main controller of the pacman game
@@ -38,7 +41,7 @@ func (g *GameController) mountScreen(newState constants.GameState) {
 		g.activeScreen = screens.NewMenu(g.screenWidth, g.screenHeight, g.ctx)
 	case constants.PlayState:
 		// Set active screen to the loading screen while the level screen is prepared
-		g.activeScreen = screens.NewLoading(g.screenWidth, g.screenHeight)
+		g.activeScreen = screens.NewLoading(g.screenWidth, g.screenHeight, g.ctx)
 		go func(controller *GameController) {
 			level, err := screens.NewLevel("assets/level1.txt", g.nEnemies, g.ctx)
 			if err != nil {
@@ -47,6 +50,8 @@ func (g *GameController) mountScreen(newState constants.GameState) {
 			controller.activeScreen = level
 			controller.activeScreen.Run()
 		}(g)
+	case constants.GameOverState:
+		g.activeScreen = screens.NewGameOver(g.screenWidth, g.screenHeight, g.ctx)
 	}
 	go g.activeScreen.Run()
 }
@@ -85,6 +90,20 @@ func InitGameController(nEnemies int) (*GameController, error) {
 		return nil, err
 	}
 
+	soundPlayer, err := modules.InitSoundPlayer()
+	if err != nil {
+		return nil, err
+	}
+
+	tt, err := truetype.Parse(fonts.PressStart2P_ttf)
+	if err != nil {
+		return nil, err
+	}
+
+	fontFace := truetype.NewFace(tt, &truetype.Options{
+		Size: 30, DPI: 72, Hinting: font.HintingFull,
+	})
+
 	w := constants.HorizontalTiles * constants.TileSize
 	h := constants.VerticalTiles * constants.TileSize
 	gameController := GameController{
@@ -94,6 +113,8 @@ func InitGameController(nEnemies int) (*GameController, error) {
 		ctx: &contexts.AnchorContext{
 			ChangeState:  make(chan constants.GameState),
 			AssetManager: assetManager,
+			SoundPlayer:  soundPlayer,
+			FontFace:     fontFace,
 		},
 		isActive: false,
 	}

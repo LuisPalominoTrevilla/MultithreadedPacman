@@ -2,23 +2,20 @@ package screens
 
 import (
 	"image/color"
-	"log"
 	"time"
 
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
-	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/text"
-	"golang.org/x/image/font"
 )
 
 // Loading represents a loading screen
 type Loading struct {
-	w      int
-	h      int
-	font   font.Face
-	sprite *structures.SpriteSequence
+	w         int
+	h         int
+	anchorCtx *contexts.AnchorContext
+	sprite    *structures.SpriteSequence
 }
 
 // Run loading screen logic
@@ -43,20 +40,11 @@ func (l *Loading) Draw(screen *ebiten.Image) {
 	str := "LOADING..."
 	x := (l.w - len(str)*30) / 2
 	y := (l.h+30)/2 + int(pacmanSize)*2
-	text.Draw(screen, str, l.font, x, y, color.White)
+	text.Draw(screen, str, l.anchorCtx.FontFace, x, y, color.White)
 }
 
 // NewLoading screen
-func NewLoading(w, h int) *Loading {
-	tt, err := truetype.Parse(fonts.PressStart2P_ttf)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fontFace := truetype.NewFace(tt, &truetype.Options{
-		Size: 30, DPI: 72, Hinting: font.HintingFull,
-	})
-
+func NewLoading(w, h int, anchorCtx *contexts.AnchorContext) *Loading {
 	sprites := []string{
 		"assets/pacman/pacman-1.png",
 		"assets/pacman/pacman-2.png",
@@ -64,9 +52,9 @@ func NewLoading(w, h int) *Loading {
 	}
 	seq, _ := structures.InitSpriteSequence(sprites)
 	return &Loading{
-		w:      w,
-		h:      h,
-		font:   fontFace,
-		sprite: seq,
+		w:         w,
+		h:         h,
+		anchorCtx: anchorCtx,
+		sprite:    seq,
 	}
 }

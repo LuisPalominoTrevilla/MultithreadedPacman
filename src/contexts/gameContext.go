@@ -7,6 +7,7 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/interfaces"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
+	"golang.org/x/image/font"
 )
 
 // GameContext represents the game context
@@ -24,4 +25,7 @@ type GameContext struct {
 type AnchorContext struct {
 	ChangeState  chan constants.GameState
 	AssetManager *modules.AssetManager
+	SoundPlayer  *modules.SoundPlayer
+	GameScore    uint
+	FontFace     font.Face
 }
