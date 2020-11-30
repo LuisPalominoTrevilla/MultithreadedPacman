@@ -117,8 +117,8 @@ func (l *Level) Size() (width, height int) {
 	return l.ctx.Maze.Dimensions()
 }
 
-// Run logic of the level, incluiding redraws
-func (l *Level) Run() {
+// Run logic of the level
+func (l *Level) Run(nextScreen chan constants.GameState) {
 	// TODO: Uncomment lines to play initial sound of level
 	// wait := make(chan struct{})
 	// l.ctx.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
@@ -162,8 +162,8 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	// TODO: Draw scoreboard and stuff on the bottom of the screen (Add more space first)
 }
 
-// InitLevel given a valid level file
-func InitLevel(levelFile string, numEnemies int) (*Level, error) {
+// NewLevel given a valid level file
+func NewLevel(levelFile string, numEnemies int) (*Level, error) {
 	if numEnemies <= 0 {
 		return nil, errors.New("At least one enemy must be spawned")
 	}

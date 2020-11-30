@@ -9,11 +9,18 @@ import (
 
 // GameController represents the main controller of the pacman game
 type GameController struct {
-	state   constants.GameState
-	screens map[constants.GameState]interfaces.Screen
+	changeState chan constants.GameState
+	state       constants.GameState
+	screens     map[constants.GameState]interfaces.Screen
 }
 
 func (g *GameController) run() {
+	for {
+		select {
+		case newState := <-g.changeState:
+			g.switchScreen(newState)
+		}
+	}
 }
 
 func (g *GameController) currentScreen() interfaces.Screen {
@@ -25,13 +32,12 @@ func (g *GameController) currentScreen() interfaces.Screen {
 }
 
 func (g *GameController) switchScreen(newState constants.GameState) {
-	// TODO: If current screen is not null, create a method to stop all execution
 	g.state = newState
 	screen := g.currentScreen()
 	if screen == nil {
 		return
 	}
-	screen.Run()
+	go screen.Run(g.changeState)
 }
 
 // Draw TEMPORAL
@@ -43,7 +49,7 @@ func (g *GameController) Draw(mainScreen *ebiten.Image) {
 // InitGame to start the logic
 func (g *GameController) InitGame() {
 	go g.run()
-	g.switchScreen(constants.PlayState)
+	g.switchScreen(constants.MenuState)
 }
 
 // State of the game
@@ -54,17 +60,20 @@ func (g *GameController) State() constants.GameState {
 // InitGameController instantiaes the main game controller
 func InitGameController(nEnemies int) (*GameController, error) {
 	gameController := GameController{
-		state:   constants.InactiveState,
-		screens: make(map[constants.GameState]interfaces.Screen),
+		changeState: make(chan constants.GameState),
+		state:       constants.InactiveState,
+		screens:     make(map[constants.GameState]interfaces.Screen),
 	}
 
-	level, err := screens.InitLevel("assets/level1.txt", nEnemies)
+	level, err := screens.NewLevel("assets/level1.txt", nEnemies)
 	if err != nil {
 		return nil, err
 	}
 
-	gameController.screens[constants.PlayState] = level
 	w, h := level.Size()
+	menu := screens.NewMenu(constants.TileSize*w, constants.TileSize*h)
+	gameController.screens[constants.PlayState] = level
+	gameController.screens[constants.MenuState] = menu
 	ebiten.SetWindowSize(constants.TileSize*w, constants.TileSize*h)
 	ebiten.SetWindowTitle("Pacman")
 	return &gameController, nil

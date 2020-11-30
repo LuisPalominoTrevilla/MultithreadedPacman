@@ -38,10 +38,12 @@ const (
 // GameState represents the game state
 type GameState int
 
-// InactiveState - inactive game state
-// PlayState - playing game state
+// InactiveState - Inactive game state
+// MenuState - Main menu state
+// PlayState - Playing game state
 const (
 	InactiveState GameState = iota
+	MenuState
 	PlayState
 )
 

@@ -1,6 +1,9 @@
 package interfaces
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // Location interface exposes basic methods exclusive to a location
 type Location interface {
@@ -13,6 +16,6 @@ type Location interface {
 
 // Screen represents any game screen
 type Screen interface {
-	Run()
+	Run(nextScreen chan constants.GameState)
 	Draw(screen *ebiten.Image)
 }
