@@ -105,7 +105,7 @@ func InitGameController(nEnemies int) (*GameController, error) {
 	})
 
 	w := constants.HorizontalTiles * constants.TileSize
-	h := constants.VerticalTiles * constants.TileSize
+	h := constants.VerticalTiles * constants.TileSize + 100
 	gameController := GameController{
 		nEnemies:     nEnemies,
 		screenWidth:  w,

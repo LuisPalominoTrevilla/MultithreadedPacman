@@ -3,6 +3,8 @@ package screens
 import (
 	"bufio"
 	"os"
+	"fmt"
+	"image/color"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
@@ -11,6 +13,7 @@ import (
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/modules"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/structures"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
 )
 
 // Level represents a level with all of its contents
@@ -158,6 +161,12 @@ MainLoop:
 func (l *Level) Draw(screen *ebiten.Image) {
 	l.ctx.Maze.Draw(screen)
 	// TODO: Draw scoreboard and stuff on the bottom of the screen (Add more space first)
+	var str string
+	var x, y int
+	str = fmt.Sprintf("Score: %05d", l.player.Score)
+	x = 50
+	y = constants.VerticalTiles * constants.TileSize + 60
+	text.Draw(screen, str, l.anchorCtx.FontFace, x, y, color.White)
 }
 
 // NewLevel given a valid level file
