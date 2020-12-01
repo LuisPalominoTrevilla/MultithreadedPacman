@@ -2,9 +2,9 @@ package screens
 
 import (
 	"bufio"
-	"os"
 	"fmt"
 	"image/color"
+	"os"
 
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/constants"
 	"github.com/LuisPalominoTrevilla/MultithreadedPacman/src/contexts"
@@ -106,10 +106,9 @@ func (l *Level) parseLevel(file string, numEnemies int) error {
 
 // Run logic of the level
 func (l *Level) Run() {
-	// TODO: Uncomment lines to play initial sound of level
-	// wait := make(chan struct{})
-	// l.ctx.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
-	// <-wait
+	wait := make(chan struct{})
+	l.ctx.SoundPlayer.PlayOnceAndNotify(constants.GameStart, wait)
+	<-wait
 	sirenSounds := []constants.SoundEffect{
 		constants.GhostSirenPhase1,
 		constants.GhostSirenPhase2,
@@ -160,12 +159,11 @@ MainLoop:
 // Draw the entire level
 func (l *Level) Draw(screen *ebiten.Image) {
 	l.ctx.Maze.Draw(screen)
-	// TODO: Draw scoreboard and stuff on the bottom of the screen (Add more space first)
 	var str string
 	var x, y int
 	str = fmt.Sprintf("Score: %05d", l.player.Score)
 	x = 50
-	y = constants.VerticalTiles * constants.TileSize + 60
+	y = constants.VerticalTiles*constants.TileSize + 60
 	text.Draw(screen, str, l.anchorCtx.FontFace, x, y, color.White)
 }
 
