@@ -47,7 +47,7 @@ func (g *GameOver) Draw(screen *ebiten.Image) {
 
 // NewGameOver screen
 func NewGameOver(w, h int, anchorCtx *contexts.AnchorContext) *GameOver {
-	overScreen, _, _ = ebitenutil.NewImageFromFile("assets/over-screen.png")
+	overScreen, _, _ = ebitenutil.NewImageFromFile("assets/over-screen.jpeg")
 	return &GameOver{
 		w:         w,
 		h:         h,
